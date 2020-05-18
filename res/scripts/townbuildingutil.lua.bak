@@ -188,7 +188,7 @@ function townbuildingutil.make_building2_ext(buildingFace, availability, townBui
 		end
 	}
 end
-
+-- LOLLO all res, ind and com constructions call this
 function townbuildingutil.make_building2(buildingFace, landUseType, era, level, parcelSize, modelData, groundTexture)
 	local scaffolding = {
 		buildingFace = { buildingFace },
