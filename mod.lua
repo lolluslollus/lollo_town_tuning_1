@@ -53,6 +53,7 @@ local townBuildingLevelOptions = {
 	},
 }
 local townMajorStreetAngleRange = 10.0 -- .0
+local townDevelopInterval = 20.0 -- 60.0
 
 function data()
 	local filterLevels = function(options)
@@ -141,44 +142,6 @@ function data()
 					role = "CREATOR",
 				},
 			},
-			-- categories = {
-			-- 	{ key = "one", name = _("One") },
-			-- 	{ key = "two", name = _("Two") },
-			-- },
-			-- settings = {
-			-- 	-- format: category = { list of key/name pairs }
-			-- 	one = { { "one1", _("One 1") }, { "one2", _("One 2") } },
-			-- 	two = { { "two1", _("Two 1") }, { "two2", _("Two 2") } },
-			-- },
-			-- options = {
-			-- 	-- format: category = { list of key/name pairs }
-			-- 	one = { { "one1", _("One 1") }, { "one2", _("One 2") } },
-			-- 	two = { { "two1", _("Two 1") }, { "two2", _("Two 2") } },
-			-- },
-		},
-		-- options to show in the advanced game settings menu (optional)
-		-- The basic process is as follows: the options from all active mods 
-		-- are collected and presented to the user. 
-		-- The user can then select an entry in each category. 
-		-- When the game starts, this configuration (table/dictionary) 
-		-- is passed to the function runFn (parameter settings), 
-		-- which can then act accordingly. 
-		-- The initial set of options (and the base run function) 
-		-- is defined in res\config\base_mod.lua.
-		-- LOLLO NOTE these values never pull, neither options nor settings nor categories
-		categories = {
-			{ key = "one", name = _("One") },
-			{ key = "two", name = _("Two") },
-		},
-		options = {
-			-- format: category = { list of key/name pairs }
-			one = { { "one1", _("One 1") }, { "one2", _("One 2") } },
-			two = { { "two1", _("Two 1") }, { "two2", _("Two 2") } },
-		},
-		settings = {
-			-- format: category = { list of key/name pairs }
-			one = { { "one1", _("One 1") }, { "one2", _("One 2") } },
-			two = { { "two1", _("Two 1") }, { "two2", _("Two 2") } },
 		},
 		runFn = function (settings)
 			-- settings = {
@@ -192,6 +155,7 @@ function data()
 			addFileFilter("construction", filterLevels(townBuildingLevelOptions))
 			addFileFilter("construction", filterEras(townBuildingEraOptions))
 			game.config.townMajorStreetAngleRange = townMajorStreetAngleRange
+			game.config.townDevelopInterval = townDevelopInterval
 		end,
 	}
 end
