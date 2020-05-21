@@ -103,6 +103,8 @@ function data()
 			addFileFilter("construction", filterEras(mySettings.townBuildingEraOptions))
 			game.config.townMajorStreetAngleRange = mySettings.townMajorStreetAngleRange
 			game.config.townDevelopInterval = mySettings.townDevelopInterval
+
+			print('LOLLO game.config.townDevelopInterval = ', game.config.townDevelopInterval)
 		end,
 	}
 end
