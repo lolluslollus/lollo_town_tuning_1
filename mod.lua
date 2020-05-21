@@ -1,60 +1,5 @@
 -- local luadump = require('luadump')
 
-local townBuildingEraOptions = {
-	BuildingsEraA = {
-		order = 2,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era A Buildings"),
-		description = _("BuildingsEraA"),
-	},
-	BuildingsEraB = {
-		order = 3,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era B Buildings"),
-		description = _("BuildingsEraB"),
-	},
-	BuildingsEraC = {
-		order = 4,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era C Buildings"),
-		description = _("BuildingsEraC"),
-	},
-}
-local townBuildingLevelOptions = {
-	BuildingsLvl2 = {
-		order=2,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("LVL 2 Buildings"),
-		description = _("BuildingsLvl2"),
-	},
-	BuildingsLvl3 = {
-		order=3,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("LVL 3 Buildings"),
-		description = _("BuildingsLvl3"),
-	},
-	BuildingsLvl4 = {
-		order=4,
-		type = "boolean",
-		default = false,
-		value = false,
-		name = _("LVL 4 Buildings"),
-		description = _("BuildingsLvl4"),
-	},
-}
-local townMajorStreetAngleRange = 10.0 -- .0
-local townDevelopInterval = 20.0 -- 60.0
-
 function data()
 	local filterLevels = function(options)
 		if options.BuildingsLvl2 == nil then
@@ -75,7 +20,7 @@ function data()
 			return true
 		end
 	end
-	
+
 	local filterEras = function(options)
 		if options.BuildingsEraA==nil then
 			error("options empty")
@@ -152,10 +97,12 @@ function data()
 			--   }
 			-- print('LOLLO settings = ')
 			-- luadump(true)(settings)
-			addFileFilter("construction", filterLevels(townBuildingLevelOptions))
-			addFileFilter("construction", filterEras(townBuildingEraOptions))
-			game.config.townMajorStreetAngleRange = townMajorStreetAngleRange
-			game.config.townDevelopInterval = townDevelopInterval
+			local mySettings = require('/lollo_building_tuning/settings')
+
+			addFileFilter("construction", filterLevels(mySettings.townBuildingLevelOptions))
+			addFileFilter("construction", filterEras(mySettings.townBuildingEraOptions))
+			game.config.townMajorStreetAngleRange = mySettings.townMajorStreetAngleRange
+			game.config.townDevelopInterval = mySettings.townDevelopInterval
 		end,
 	}
 end
