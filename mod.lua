@@ -1,4 +1,4 @@
--- local luadump = require('luadump')
+local luadump = require('lollo_building_tuning/luadump')
 
 function data()
 	local filterLevels = function(options)
@@ -88,6 +88,7 @@ function data()
 				},
 			},
 		},
+		-- LOLLO TODO activate this mod, then start the game, then press "lans use layer": the game freezes.
 		runFn = function (settings)
 			-- settings = {
 			-- 	climate = "temperate",
