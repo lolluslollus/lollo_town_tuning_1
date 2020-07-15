@@ -63,7 +63,6 @@ function data()
 			return true
 		end
 	end
-	
 
 	return {
 		info = {
@@ -88,16 +87,8 @@ function data()
 				},
 			},
 		},
-		-- LOLLO TODO activate this mod, then start the game, then press "lans use layer": the game freezes.
+		-- LOLLO TODO activate this mod, then start the game, then press "land use layer": the game freezes.
 		runFn = function (settings)
-			-- settings = {
-			-- 	climate = "temperate",
-			-- 	environment = "temperate",
-			-- 	nameList = "europe",
-			-- 	vehicles = "europe"
-			--   }
-			-- print('LOLLO settings = ')
-			-- luadump(true)(settings)
 			local mySettings = require('/lollo_building_tuning/settings')
 
 			addFileFilter("construction", filterLevels(mySettings.townBuildingLevelOptions))
