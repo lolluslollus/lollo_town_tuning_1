@@ -188,7 +188,7 @@ function townbuildingutil.make_building2_ext(buildingFace, availability, townBui
 		end
 	}
 end
--- LOLLO all res, ind and com constructions call this
+
 function townbuildingutil.make_building2(buildingFace, landUseType, era, level, parcelSize, modelData, groundTexture)
 	local scaffolding = {
 		buildingFace = { buildingFace },
@@ -199,11 +199,8 @@ function townbuildingutil.make_building2(buildingFace, landUseType, era, level, 
 	local bc = 1990
 	
 	local availability = {
-		-- original
-		-- yearFrom = era == "A" and 0 or (era == "B" and ab or bc),
-		-- yearTo = era == "A" and ab or (era == "B" and bc or 0)
 		yearFrom = era == "A" and 0 or (era == "B" and ab or bc),
-		yearTo = 0,
+		yearTo = era == "A" and ab or (era == "B" and bc or 0)
 	}
 	
 	local townBuildingParams = {
@@ -367,11 +364,8 @@ end
 function townbuildingutil.make_building_new(constructionModelId, buildingModelId, buildingFace, transf, landUseType,
 		era, level, parcelSize, assets, scaffolding)
 	local availability = {
-		-- original
-		-- yearFrom = era == "A" and 0 or (era == "B" and 1900 or 1975),
-		-- yearTo = era == "A" and 1900 or (era == "B" and 1975 or 0)
 		yearFrom = era == "A" and 0 or (era == "B" and 1900 or 1975),
-		yearTo = 0
+		yearTo = era == "A" and 1900 or (era == "B" and 1975 or 0)
 	}
 	
 	local townBuildingParams = {

@@ -87,7 +87,6 @@ function data()
 				},
 			},
 		},
-		-- LOLLO TODO activate this mod, then start the game, then press "land use layer": the game freezes.
 		runFn = function (settings)
 			local mySettings = require('/lollo_building_tuning/settings')
 
@@ -95,6 +94,7 @@ function data()
 			addFileFilter("construction", filterEras(mySettings.townBuildingEraOptions))
 			game.config.townMajorStreetAngleRange = mySettings.townMajorStreetAngleRange
 			game.config.townDevelopInterval = mySettings.townDevelopInterval
+			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
 			print('LOLLO game.config.townDevelopInterval = ', game.config.townDevelopInterval)
 		end,
