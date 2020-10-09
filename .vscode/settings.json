@@ -10,6 +10,8 @@
         "addFileFilter",
         "game",
         "gui",
-        "data"
+        "data",
+        "addModifier",
+        "debugPrint"
     ]
 }
