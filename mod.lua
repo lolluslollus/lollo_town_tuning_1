@@ -31,8 +31,11 @@ debugPrint(params)
 				-- LOLLO TODO this needs testing
 				print('result.rule.capacity before =', result.rule.capacity)
 				print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				-- this was copied from yeol senseless
 				-- result.rule.capacity = (result.rule.capacity + math.random() * 1.5) * _mySettings.townBuildingDemandFactor
-				result.rule.capacity = math.ceil(result.rule.capacity * _mySettings.townBuildingDemandFactor)
+				-- this may increase the amount of industrial buildings
+				-- result.rule.capacity = math.ceil(result.rule.capacity * _mySettings.townBuildingDemandFactor)
+				-- this should reduce the amount of cargo required
 				result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
 				print('result.rule.capacity after =', result.rule.capacity)
 				print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
