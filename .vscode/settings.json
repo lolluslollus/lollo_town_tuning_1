@@ -12,6 +12,7 @@
         "gui",
         "data",
         "addModifier",
-        "debugPrint"
+        "debugPrint",
+        "api"
     ]
 }

@@ -1,8 +1,8 @@
 function data()
 return {
 	en = {
-		NAME = "Town building tuning",
-		DESC = "Modifies town building availability by era and by level"
+		NAME = "Town tuning",
+		DESC = "Modifies town building properties"
 	},
 
 }
