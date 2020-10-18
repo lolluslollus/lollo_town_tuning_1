@@ -367,8 +367,7 @@ debugPrint(commonData.towns.get())
             -- end
             api.cmd.sendCommand(
                 -- this triggers updateFn for all the town buildings
-                -- res, com, ind. LOLLO TODO find out the res, com and ind needs of a town
-                -- and replicate them here.
+                -- res, com, ind.
                 api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
             )
         end
@@ -407,8 +406,7 @@ debugPrint(commonData.towns.get())
             -- end
             api.cmd.sendCommand(
                 -- this triggers updateFn for all the town buildings
-                -- res, com, ind. LOLLO TODO find out the res, com and ind needs of a town
-                -- and replicate them here.
+                -- res, com, ind.
                 api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
             )
         end
@@ -435,8 +433,7 @@ debugPrint(commonData.towns.get())
         -- end
         api.cmd.sendCommand(
             -- this triggers updateFn for all the town buildings
-            -- res, com, ind. LOLLO TODO find out the res, com and ind needs of a town
-            -- and replicate them here.
+            -- res, com, ind.
             api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
         )
     end,
