@@ -1,7 +1,7 @@
 return {
 -- Table: {1}
 {
-   ["capacityFactor"]=1,
-   ["consumptionFactor"]=0.62,
+   ["capacityFactor"]=0.04,
+   ["consumptionFactor"]=0.04,
 },
 }

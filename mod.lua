@@ -7,33 +7,37 @@ function data()
 		-- alter properties of all buildings in all towns
 		-- this fires for every instance of a building, but it does not contain instance-specific data,
 		-- such as the building town or location.
-		if (data.type ~= "TOWN_BUILDING") or not(data.updateFn) then return data end
+		print('cc 1')
+		if not(data) or (data.type ~= "TOWN_BUILDING") or not(data.updateFn) then return data end
+		print('cc 2')
+		print('type(data.updateFn) =', type(data.updateFn))
+		-- local originalPreProcessFn = data.preProcessFn
+		-- data.preProcessFn = function(one, two, three)
+		-- 	print('construction.preProcessFn starting for TOWN_BUILDING with filename =', fileName)
+		-- 	if fileName:find('era_b/com_1_1x2_02.con') then
+		-- 		print('data =')
+		-- 		debugPrint(data)
+		-- 		print('one =')
+		-- 		debugPrint(one)
+		-- 		print('two =')
+		-- 		debugPrint(two)
+		-- 		print('three =')
+		-- 		debugPrint(three)
+		-- 	end
 
-		local originalPreProcessFn = data.preProcessFn
-		data.preProcessFn = function(one, two, three)
-			print('construction.preProcessFn starting for TOWN_BUILDING with filename =', fileName)
-			if fileName:find('era_b/com_1_1x2_02.con') then
-				print('data =')
-				debugPrint(data)
-				print('one =')
-				debugPrint(one)
-				print('two =')
-				debugPrint(two)
-				print('three =')
-				debugPrint(three)
-			end
+		-- 	local result = originalPreProcessFn(one, two, three)
+		-- 	if not(result) then return result end
 
-			local result = originalPreProcessFn(one, two, three)
-			if not(result) then return result end
+		-- 	if fileName:find('era_b/com_1_1x2_02.con') then
+		-- 		print('result =')
+		-- 		debugPrint(result)
+		-- 	end
+		-- end
 
-			if fileName:find('era_b/com_1_1x2_02.con') then
-				print('result =')
-				debugPrint(result)
-			end
-		end
-
+		data.upgradeFn = function(_) end
 		local originalUpdateFn = data.updateFn
 		data.updateFn = function(params)
+			print('cc 3')
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
@@ -94,6 +98,19 @@ end
 	-- local function constructionMenuCallback(fileName, data)
 	-- 	print('loading constructionMenu with fileName =', fileName or 'NIL', 'data =')
 	-- 	debugPrint(data)
+	-- 	return data
+	-- end
+
+	-- local function loadScriptCallback(fileName, data)
+	-- 	print('loading script with fileName =', fileName or 'NIL', 'data =')
+	-- 	debugPrint(data)
+	-- 	return data
+	-- end
+
+	-- local function loadGameScriptCallback(fileName, data)
+	-- 	print('loading game script with fileName =', fileName or 'NIL', 'data =')
+	-- 	debugPrint(data)
+	-- 	return data
 	-- end
 
 	local filterLevels = function(options)
@@ -142,7 +159,7 @@ end
 		local isEraC = isEraFunc(1990 ,0)
 
 		return function(fileName, data)
-			if data.type=="TOWN_BUILDING" then
+			if data.type == "TOWN_BUILDING" then
 				-- print('LOLLO filename = ', fileName, 'availability = ', data.availability)
 				if options.BuildingsEraA == false and isEraA(data.availability) then
 					return false
@@ -190,6 +207,8 @@ end
 			addModifier("loadConstruction", constructionCallback)
 			-- does nothing
 			-- addModifier("loadConstructionMenu", constructionMenuCallback)
+			-- addModifier('loadScript', loadScriptCallback)
+			-- addModifier('loadGameScript', loadGameScriptCallback)
 			game.config.townMajorStreetAngleRange = _mySettings.townMajorStreetAngleRange
 			game.config.townDevelopInterval = _mySettings.townDevelopInterval
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps

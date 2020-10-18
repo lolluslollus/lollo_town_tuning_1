@@ -1,3 +1,4 @@
+local arrayUtils = require('lollo_building_tuning.arrayUtils')
 local commonData = require('lollo_building_tuning.commonData')
 local function _myErrorHandler(err)
     print('lollo town tuning caught error: ', err)
@@ -81,27 +82,48 @@ local _utils = {
         end
         _state.townId4ConsumptionFactorNeedingUpdate = false
     end,
-    initTowns = function()
-        local townCapacities = api.engine.system.townBuildingSystem.getTown2personCapacitiesMap()
-        local towns = commonData.towns.get()
-        if not(townCapacities) or #towns > 0 then return end
+    replaceBuildingWithSelf = function(oldBuildingId)
+        -- multithreading nightmare
+        print('oldBuildingId =', oldBuildingId or 'NIL')
+        if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
 
-        for id, personCapacities in pairs(townCapacities) do
-            towns[id] = {
-                personCapacities = personCapacities,
-                townStatWindowId = 'temp.view.entity_' .. tostring(id)
-            }
-        end
+        local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
+        print('oldBuilding =')
+        debugPrint(oldBuilding)
+        if not(oldBuilding) then return end
+        print('ONE')
+        -- skip buildings that do not accept freight
+        if not(oldBuilding.personCapacity) then return end
+        print('TWO')
+        if type(oldBuilding.stockList) ~= 'number' then return end
+        print('THREE')
+        print('oldBuilding.stockList =')
+        debugPrint(oldBuilding.stockList)
+        print('type(oldBuilding.stockList) =', type(oldBuilding.stockList))
+        if oldBuilding.stockList < 0 then return end
+        print('FOUR')
+        local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
+        print('oldConstructionId =')
+        debugPrint(oldConstructionId)
+        if type(oldConstructionId) ~= 'number' then return end
+        print('FIVE')
+        if oldConstructionId < 0 then return end
+        print('SIX')
+        -- local oldConstruction = api.engine.getComponent(oldConstructionId, api.type.ComponentType.CONSTRUCTION)
+        -- print('oldConstruction =')
+        -- debugPrint(oldConstruction)
 
-        commonData.towns.set(towns)
-        print('commonData.towns.get() =')
-        debugPrint(commonData.towns.get())
-    end,
-    updateCapacityFactorValue = function(townId)
-        _state.townId4CapacityFactorNeedingUpdate = townId
-    end,
-    updateConsumptionFactorValue = function(townId)
-        _state.townId4ConsumptionFactorNeedingUpdate = townId
+        local oldConstruction2 = game.interface.getEntity(oldConstructionId)
+        print('oldConstruction2 =')
+        debugPrint(oldConstruction2)
+
+        local newId = game.interface.upgradeConstruction(
+            oldConstruction2.id,
+            oldConstruction2.fileName,
+            -- leadingStation.params -- NO!
+            arrayUtils.cloneOmittingFields(oldConstruction2.params, {'seed'})
+        )
+        print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
     end,
 --[[     replaceBuildingWithSelf_dumps = function(oldBuildingId)
         print('oldBuildingId =', oldBuildingId or 'NIL')
@@ -331,6 +353,16 @@ local _utils = {
             end
         )
     end ]]
+    updateCapacityFactorValue = function(townId)
+        if type(townId) ~= 'number' or townId < 1 then return end
+
+        _state.townId4CapacityFactorNeedingUpdate = townId
+    end,
+    updateConsumptionFactorValue = function(townId)
+        if type(townId) ~= 'number' or townId < 1 then return end
+
+        _state.townId4ConsumptionFactorNeedingUpdate = townId
+    end,
 }
 local _actions = {
     alterCapacityFactor = function(isCapacityFactorUp)
@@ -344,33 +376,52 @@ debugPrint(commonData.common.get())
 
 print('commonData.towns.get() before =')
 debugPrint(commonData.towns.get())
-        _utils.initTowns() -- I need this here
         commonData.common.setCapacityFactor(isCapacityFactorUp)
         print('commonData.towns.get() after =')
         debugPrint(commonData.towns.get())
         print('commonData.common.get() after =')
         debugPrint(commonData.common.get())
-                
+
         for townId, _ in pairs(commonData.towns.get()) do
             print('type(townId) = ', type(townId))
             print('townId = ', townId)
             local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-            if not(townData) then return end
-
-            local oldCargoNeeds = townData.cargoNeeds
-            if not(oldCargoNeeds) then return end
-
-            -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-            -- local newCargoNeeds = oldCargoNeeds
-            -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-            --     print(cargoTypeId, cargoSupply)
-            -- end
-            api.cmd.sendCommand(
-                -- this triggers updateFn for all the town buildings
+            if not(not(townData)) then
                 -- res, com, ind.
-                api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
-            )
+                local oldCargoNeeds = townData.cargoNeeds
+                if not(not(oldCargoNeeds)) then
+                    -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+                    -- local newCargoNeeds = oldCargoNeeds
+                    -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+                    --     print(cargoTypeId, cargoSupply)
+                    -- end
+                    api.cmd.sendCommand(
+                        -- this triggers updateFn for all the town buildings
+                        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
+                    )
+                end
+            end
         end
+    end,
+    alterCapacityFactorByTown = function(townId, isCapacityFactorUp)
+        -- no good, call in a loop and you are in for a multithreading disaster
+        print('alterCapacityFactorByTown starting, townId =', townId or 'NIL', 'isCapacityFactorUp =', isCapacityFactorUp or false)
+        if type(townId) ~= 'number' or townId < 1 then return end
+
+        commonData.common.setCapacityFactor(isCapacityFactorUp)
+
+        local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
+        print('#buildings =', #buildings)
+        debugPrint(buildings)
+        local i = 0
+        for _, buildingId in pairs(buildings) do
+            i = i + 1
+            print('about to replace building no', i, 'with buildingId =')
+            debugPrint(buildingId)
+            _utils.replaceBuildingWithSelf(buildingId)
+            print('building no', i, 'processed')
+        end
+        print('alterCapacityFactorByTown ending')
     end,
     alterConsumptionFactor = function(isConsumptionFactorUp)
         print('alterConsumptionFactor starting, isConsumptionFactorUp =', isConsumptionFactorUp)
@@ -383,19 +434,19 @@ debugPrint(commonData.common.get())
 
 print('commonData.towns.get() before =')
 debugPrint(commonData.towns.get())
-        _utils.initTowns() -- I need this here
         commonData.common.setConsumptionFactor(isConsumptionFactorUp)
         print('commonData.towns.get() after =')
         debugPrint(commonData.towns.get())
         print('commonData.common.get() after =')
         debugPrint(commonData.common.get())
-                
+
         for townId, _ in pairs(commonData.towns.get()) do
             print('type(townId) = ', type(townId))
             print('townId = ', townId)
             local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
             if not(townData) then return end
 
+            -- res, com, ind.
             local oldCargoNeeds = townData.cargoNeeds
             if not(oldCargoNeeds) then return end
 
@@ -406,7 +457,6 @@ debugPrint(commonData.towns.get())
             -- end
             api.cmd.sendCommand(
                 -- this triggers updateFn for all the town buildings
-                -- res, com, ind.
                 api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
             )
         end
@@ -423,6 +473,7 @@ debugPrint(commonData.towns.get())
         local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
         if not(townData) then return end
 
+        -- res, com, ind.
         local oldCargoNeeds = townData.cargoNeeds
         if not(oldCargoNeeds) then return end
 
@@ -433,7 +484,6 @@ debugPrint(commonData.towns.get())
         -- end
         api.cmd.sendCommand(
             -- this triggers updateFn for all the town buildings
-            -- res, com, ind.
             api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
         )
     end,
@@ -441,18 +491,23 @@ debugPrint(commonData.towns.get())
 
 function data()
     return {
-        guiInit = function()
-            -- create and initialize ui elements
-            _utils.initTowns()
-        end,
+        -- guiInit = function()
+        --     -- create and initialize ui elements
+        -- end,
         handleEvent = function(src, id, name, param)
             if (id ~= _eventId or type(param) ~= 'table') then return end
 
             if name == 'lolloCapacityFactorButtonDown' then
+                print('param.townId =')
+                debugPrint(param.townId)
                 _actions.alterCapacityFactor(false)
+                -- _actions.alterCapacityFactorByTown(param.townId, false)
                 _utils.updateCapacityFactorValue(param.townId)
             elseif name == 'lolloCapacityFactorButtonUp' then
+                print('param.townId =')
+                debugPrint(param.townId)
                 _actions.alterCapacityFactor(true)
+                -- _actions.alterCapacityFactorByTown(param.townId, true)
                 _utils.updateCapacityFactorValue(param.townId)
             elseif name == 'lolloConsumptionFactorButtonDown' then
                 _actions.alterConsumptionFactor(false)
