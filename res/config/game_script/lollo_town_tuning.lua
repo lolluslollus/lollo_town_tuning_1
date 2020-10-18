@@ -51,13 +51,17 @@ local _utils = {
         capacityFactorButtonUp:setId('lolloCapacityFactorButtonUp_' .. tostring(townId))
         -- buttonUp:setStyleClassList({ "positive" })
 
-        local table = api.gui.comp.Table.new(1, 'NONE')
-        table:setNumCols(3)
-        table:addRow({capacityFactorTextViewTitle, nil, nil})
-        table:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
-        table:addRow({consumptionFactorTextViewTitle, nil, nil})
-        table:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
-        editorTabLayout:addItem(table)
+        editorTabLayout:addItem(capacityFactorTextViewTitle)
+        local capacityTable = api.gui.comp.Table.new(1, 'NONE')
+        capacityTable:setNumCols(3)
+        capacityTable:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
+        editorTabLayout:addItem(capacityTable)
+
+        editorTabLayout:addItem(consumptionFactorTextViewTitle)
+        local consumptionTable = api.gui.comp.Table.new(1, 'NONE')
+        consumptionTable:setNumCols(3)
+        consumptionTable:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
+        editorTabLayout:addItem(consumptionTable)
     end,
     guiUpdateCapacityFactorValue = function()
         if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
