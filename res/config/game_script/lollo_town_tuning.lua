@@ -5,6 +5,7 @@ end
 
 local _eventId = '__lolloTownTuningEvent__'
 local _state = {
+    townId4CapacityFactorNeedingUpdate = false,
     townId4ConsumptionFactorNeedingUpdate = false
 }
 local _utils = {
@@ -20,30 +21,59 @@ local _utils = {
         local editorTab = windowContent:getTab(3)
         local editorTabLayout = editorTab:getLayout()
 
-        local textViewDown = api.gui.comp.TextView.new("-")
-        local buttonDown = api.gui.comp.Button.new(textViewDown, true)
-        buttonDown:setId('lolloConsumptionFactorButtonDown_' .. tostring(townId))
+        local consumptionFactorTextViewTitle = api.gui.comp.TextView.new('Consumption Factor')
+
+        local consumptionFactorTextViewDown = api.gui.comp.TextView.new("-")
+        local consumptionFactorButtonDown = api.gui.comp.Button.new(consumptionFactorTextViewDown, true)
+        consumptionFactorButtonDown:setId('lolloConsumptionFactorButtonDown_' .. tostring(townId))
         -- buttonDown:setStyleClassList({ "negative" })
 
-        local textViewConsumptionFactor = api.gui.comp.TextView.new(tostring(common.consumptionFactor))
-        textViewConsumptionFactor:setId('lolloConsumptionFactorDisplay_' .. tostring(townId))
+        local consumptionFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.consumptionFactor))
+        consumptionFactorTextViewValue:setId('lolloConsumptionFactorValue_' .. tostring(townId))
 
-        local textViewUp = api.gui.comp.TextView.new("+")
-        local buttonUp = api.gui.comp.Button.new(textViewUp, true)
-        buttonUp:setId('lolloConsumptionFactorButtonUp_' .. tostring(townId))
+        local consumptionFactorTextViewUp = api.gui.comp.TextView.new("+")
+        local consumptionFactorButtonUp = api.gui.comp.Button.new(consumptionFactorTextViewUp, true)
+        consumptionFactorButtonUp:setId('lolloConsumptionFactorButtonUp_' .. tostring(townId))
+        -- buttonUp:setStyleClassList({ "positive" })
+
+        local capacityFactorTextViewTitle = api.gui.comp.TextView.new('Capacity Factor')
+
+        local capacityFactorTextViewDown = api.gui.comp.TextView.new("-")
+        local capacityFactorButtonDown = api.gui.comp.Button.new(capacityFactorTextViewDown, true)
+        capacityFactorButtonDown:setId('lolloCapacityFactorButtonDown_' .. tostring(townId))
+        -- buttonDown:setStyleClassList({ "negative" })
+
+        local capacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.capacityFactor))
+        capacityFactorTextViewValue:setId('lolloCapacityFactorValue_' .. tostring(townId))
+
+        local capacityFactorTextViewUp = api.gui.comp.TextView.new("+")
+        local capacityFactorButtonUp = api.gui.comp.Button.new(capacityFactorTextViewUp, true)
+        capacityFactorButtonUp:setId('lolloCapacityFactorButtonUp_' .. tostring(townId))
         -- buttonUp:setStyleClassList({ "positive" })
 
         local table = api.gui.comp.Table.new(1, 'NONE')
         table:setNumCols(3)
-        table:addRow({buttonDown, textViewConsumptionFactor, buttonUp})
+        table:addRow({capacityFactorTextViewTitle, nil, nil})
+        table:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
+        table:addRow({consumptionFactorTextViewTitle, nil, nil})
+        table:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
         editorTabLayout:addItem(table)
     end,
-    guiUpdateConsumptionFactorDisplay = function()
+    guiUpdateCapacityFactorValue = function()
+        if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
+
+        local capacityFactorValue = api.gui.util.getById('lolloCapacityFactorValue_' .. tostring(_state.townId4CapacityFactorNeedingUpdate))
+        if capacityFactorValue then
+            capacityFactorValue:setText(tostring(commonData.common.get().capacityFactor or 'NIL'))
+        end
+        _state.townId4CapacityFactorNeedingUpdate = false
+    end,
+    guiUpdateConsumptionFactorValue = function()
         if type(_state.townId4ConsumptionFactorNeedingUpdate) ~= 'number' then return end
 
-        local consumptionFactorDisplay = api.gui.util.getById('lolloConsumptionFactorDisplay_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
-        if consumptionFactorDisplay then
-            consumptionFactorDisplay:setText(tostring(commonData.common.get().consumptionFactor or 'NIL'))
+        local consumptionFactorValue = api.gui.util.getById('lolloConsumptionFactorValue_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
+        if consumptionFactorValue then
+            consumptionFactorValue:setText(tostring(commonData.common.get().consumptionFactor or 'NIL'))
         end
         _state.townId4ConsumptionFactorNeedingUpdate = false
     end,
@@ -63,7 +93,10 @@ local _utils = {
         print('commonData.towns.get() =')
         debugPrint(commonData.towns.get())
     end,
-    updateConsumptionFactorDisplay = function(townId)
+    updateCapacityFactorValue = function(townId)
+        _state.townId4CapacityFactorNeedingUpdate = townId
+    end,
+    updateConsumptionFactorValue = function(townId)
         _state.townId4ConsumptionFactorNeedingUpdate = townId
     end,
 --[[     replaceBuildingWithSelf_dumps = function(oldBuildingId)
@@ -296,6 +329,46 @@ local _utils = {
     end ]]
 }
 local _actions = {
+    alterCapacityFactor = function(isCapacityFactorUp)
+        print('alterCapacityFactor starting, isCapacityFactorUp =', isCapacityFactorUp)
+        -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
+        -- for _, buildingId in pairs(buildings) do
+        --     _utils.replaceBuildingWithSelf_dumps(buildingId)
+        -- end
+print('commonData.common.get() before =')
+debugPrint(commonData.common.get())
+
+print('commonData.towns.get() before =')
+debugPrint(commonData.towns.get())
+        _utils.initTowns() -- I need this here
+        commonData.common.setCapacityFactor(isCapacityFactorUp)
+        print('commonData.towns.get() after =')
+        debugPrint(commonData.towns.get())
+        print('commonData.common.get() after =')
+        debugPrint(commonData.common.get())
+                
+        for townId, _ in pairs(commonData.towns.get()) do
+            print('type(townId) = ', type(townId))
+            print('townId = ', townId)
+            local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+            if not(townData) then return end
+
+            local oldCargoNeeds = townData.cargoNeeds
+            if not(oldCargoNeeds) then return end
+
+            -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+            -- local newCargoNeeds = oldCargoNeeds
+            -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+            --     print(cargoTypeId, cargoSupply)
+            -- end
+            api.cmd.sendCommand(
+                -- this triggers updateFn for all the town buildings
+                -- res, com, ind. LOLLO TODO find out the res, com and ind needs of a town
+                -- and replicate them here.
+                api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
+            )
+        end
+    end,
     alterConsumptionFactor = function(isConsumptionFactorUp)
         print('alterConsumptionFactor starting, isConsumptionFactorUp =', isConsumptionFactorUp)
         -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
@@ -374,12 +447,18 @@ function data()
         handleEvent = function(src, id, name, param)
             if (id ~= _eventId or type(param) ~= 'table') then return end
 
-            if name == 'lolloConsumptionFactorButtonDown' then
+            if name == 'lolloCapacityFactorButtonDown' then
+                _actions.alterCapacityFactor(false)
+                _utils.updateCapacityFactorValue(param.townId)
+            elseif name == 'lolloCapacityFactorButtonUp' then
+                _actions.alterCapacityFactor(true)
+                _utils.updateCapacityFactorValue(param.townId)
+            elseif name == 'lolloConsumptionFactorButtonDown' then
                 _actions.alterConsumptionFactor(false)
-                _utils.updateConsumptionFactorDisplay(param.townId)
+                _utils.updateConsumptionFactorValue(param.townId)
             elseif name == 'lolloConsumptionFactorButtonUp' then
                 _actions.alterConsumptionFactor(true)
-                _utils.updateConsumptionFactorDisplay(param.townId)
+                _utils.updateConsumptionFactorValue(param.townId)
             end
         end,
         guiHandleEvent = function(id, name, param)
@@ -399,6 +478,28 @@ function data()
                                     break
                                 end
                             end
+                        elseif name == 'button.click' and id:find('lolloCapacityFactorButtonDown_') then
+                            print('LOLLO button down clicked; name, param =')
+                            debugPrint(name)
+                            debugPrint(param)
+                            game.interface.sendScriptEvent(
+                                _eventId, -- id
+                                'lolloCapacityFactorButtonDown', -- name
+                                { -- param
+                                    townId = tonumber(id:sub(id:find('_') + 1))
+                                }
+                            )
+                        elseif name == 'button.click' and id:find('lolloCapacityFactorButtonUp_') then
+                            print('LOLLO button up clicked; name, param =')
+                            debugPrint(name)
+                            debugPrint(param)
+                            game.interface.sendScriptEvent(
+                                _eventId, -- id
+                                'lolloCapacityFactorButtonUp', -- name
+                                { -- param
+                                    townId = tonumber(id:sub(id:find('_') + 1))
+                                }
+                            )
                         elseif name == 'button.click' and id:find('lolloConsumptionFactorButtonDown_') then
                             print('LOLLO button down clicked; name, param =')
                             debugPrint(name)
@@ -430,11 +531,13 @@ function data()
         -- update = function()
         -- end,
         guiUpdate = function()
-            _utils.guiUpdateConsumptionFactorDisplay()
+            _utils.guiUpdateCapacityFactorValue()
+            _utils.guiUpdateConsumptionFactorValue()
         end,
         load = function(data)
             if not(data) then return end
 
+            _state.townId4CapacityFactorNeedingUpdate = data.townId4CapacityFactorNeedingUpdate or false
             _state.townId4ConsumptionFactorNeedingUpdate = data.townId4ConsumptionFactorNeedingUpdate or false
         end,
         save = function()

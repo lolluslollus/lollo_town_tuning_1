@@ -41,9 +41,13 @@ print('construction.updateFn starting for TOWN_BUILDING with filename =', fileNa
 				-- this may increase the amount of industrial buildings
 				-- result.rule.capacity = math.ceil(result.rule.capacity * _mySettings.townBuildingDemandFactor)
 				-- this should reduce the amount of cargo required
-				-- result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
-				print('_commonData.common.get().consumptionFactor =', _commonData.common.get().consumptionFactor or 'NIL')
-				result.rule.consumptionFactor = _commonData.common.get().consumptionFactor
+                -- result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
+                local common = _commonData.common.get()
+                print('_commonData.common.get().capacityFactor =', common.capacityFactor or 'NIL')
+				print('_commonData.common.get().consumptionFactor =', common.consumptionFactor or 'NIL')
+
+                result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
+                result.rule.consumptionFactor = common.consumptionFactor or 1.0
 				print('result.rule.capacity after =', result.rule.capacity)
 				print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
