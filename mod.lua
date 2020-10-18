@@ -1,4 +1,5 @@
 function data()
+	local _commonData = require('lollo_building_tuning.commonData')
 	local _mySettings = require('/lollo_building_tuning/settings')
 
 	local function constructionCallback(fileName, data)
@@ -10,9 +11,11 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName, 'result = ')
-debugPrint(result)
-print('params =')
-debugPrint(params)
+-- debugPrint(result)
+-- print('params =')
+-- debugPrint(params)
+-- print('data =')
+-- debugPrint(data)
 -- local sampleResult = {
 -- 	personCapacity = {
 -- 		capacity = 4,
@@ -28,7 +31,9 @@ debugPrint(params)
 -- 	},
 -- }
 			if result.rule then
-				-- LOLLO TODO this needs testing
+				-- LOLLO TODO this needs testing: does the consumption factor really change things?
+				-- LOLLO TODO how do I find out where a construction is? There seems to be no way.
+				-- Perhaps I need a different load modifier?
 				print('result.rule.capacity before =', result.rule.capacity)
 				print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
 				-- this was copied from yeol senseless
@@ -36,9 +41,11 @@ debugPrint(params)
 				-- this may increase the amount of industrial buildings
 				-- result.rule.capacity = math.ceil(result.rule.capacity * _mySettings.townBuildingDemandFactor)
 				-- this should reduce the amount of cargo required
-				result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
+				-- result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
+				print('_commonData.common.get().consumptionFactor =', _commonData.common.get().consumptionFactor or 'NIL')
+				result.rule.consumptionFactor = _commonData.common.get().consumptionFactor
 				print('result.rule.capacity after =', result.rule.capacity)
-				print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
 				print('result.personCapacity.capacity before =', result.personCapacity.capacity)
