@@ -18,8 +18,6 @@ local helper = {
 helper.common.get = function()
     -- LOLLO TODO check that the file location is not in the game dir
     local result = fileUtils.loadTable('lollo_building_tuning.commonDataTemp.lua')
-    print('commonDataTemp = ')
-    debugPrint(result)
     return result
     -- return arrayUtils.cloneDeepOmittingFields(_common)
 end

@@ -1,19 +1,24 @@
 function data()
 	local _commonData = require('lollo_building_tuning.commonData')
 	local _mySettings = require('/lollo_building_tuning/settings')
+	local arrayUtils = require('lollo_building_tuning.arrayUtils')
 
 	local function constructionCallback(fileName, data)
-			-- alter the capacitry of all town buildings
+		-- alter properties of all buildings in all towns
+		-- this fires for every instance of a building, but it does not contain instance-specific data,
+		-- such as the building town or location.
 		if (data.type ~= "TOWN_BUILDING") or not(data.updateFn) then return data end
--- print('THREE')
+
 		local originalUpdateFn = data.updateFn
 		data.updateFn = function(params)
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName, 'result = ')
--- debugPrint(result)
--- print('params =')
--- debugPrint(params)
+if fileName:find('era_b/com_1_1x2_02.con') then
+	-- debugPrint(result)
+	-- print('params =')
+	-- debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
+end
 -- print('data =')
 -- debugPrint(data)
 -- local sampleResult = {
@@ -34,8 +39,8 @@ print('construction.updateFn starting for TOWN_BUILDING with filename =', fileNa
 				-- LOLLO TODO this needs testing: does the consumption factor really change things?
 				-- LOLLO TODO how do I find out where a construction is? There seems to be no way.
 				-- Perhaps I need a different load modifier?
-				print('result.rule.capacity before =', result.rule.capacity)
-				print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				-- print('result.rule.capacity before =', result.rule.capacity)
+				-- print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
 				-- this was copied from yeol senseless
 				-- result.rule.capacity = (result.rule.capacity + math.random() * 1.5) * _mySettings.townBuildingDemandFactor
 				-- this may increase the amount of industrial buildings
@@ -43,24 +48,29 @@ print('construction.updateFn starting for TOWN_BUILDING with filename =', fileNa
 				-- this should reduce the amount of cargo required
                 -- result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
                 local common = _commonData.common.get()
-                print('_commonData.common.get().capacityFactor =', common.capacityFactor or 'NIL')
-				print('_commonData.common.get().consumptionFactor =', common.consumptionFactor or 'NIL')
+				-- print('_commonData.common.get() =')
+				-- debugPrint(common)
 
                 result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
                 result.rule.consumptionFactor = common.consumptionFactor or 1.0
-				print('result.rule.capacity after =', result.rule.capacity)
-				print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
+				-- print('result.rule.capacity after =', result.rule.capacity)
+				-- print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
-				print('result.personCapacity.capacity before =', result.personCapacity.capacity)
+				-- print('result.personCapacity.capacity before =', result.personCapacity.capacity)
 				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * _mySettings.townBuildingPersonCapacityFactor)
-				print('result.personCapacity.capacity after =', result.personCapacity.capacity)
+				-- print('result.personCapacity.capacity after =', result.personCapacity.capacity)
 			end
 			return result
 		end
 
 		return data
 	end
+
+	-- local function constructionMenuCallback(fileName, data)
+	-- 	print('loading constructionMenu with fileName =', fileName or 'NIL', 'data =')
+	-- 	debugPrint(data)
+	-- end
 
 	local filterLevels = function(options)
 		if options.BuildingsLvl2 == nil then
@@ -154,6 +164,8 @@ print('construction.updateFn starting for TOWN_BUILDING with filename =', fileNa
 			addFileFilter("construction", filterLevels(_mySettings.townBuildingLevelOptions))
 			addFileFilter("construction", filterEras(_mySettings.townBuildingEraOptions))
 			addModifier("loadConstruction", constructionCallback)
+			-- does nothing
+			-- addModifier("loadConstructionMenu", constructionMenuCallback)
 			game.config.townMajorStreetAngleRange = _mySettings.townMajorStreetAngleRange
 			game.config.townDevelopInterval = _mySettings.townDevelopInterval
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
