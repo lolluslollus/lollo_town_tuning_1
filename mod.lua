@@ -9,18 +9,42 @@ function data()
 		-- such as the building town or location.
 		if (data.type ~= "TOWN_BUILDING") or not(data.updateFn) then return data end
 
+		local originalPreProcessFn = data.preProcessFn
+		data.preProcessFn = function(one, two, three)
+			print('construction.preProcessFn starting for TOWN_BUILDING with filename =', fileName)
+			if fileName:find('era_b/com_1_1x2_02.con') then
+				print('data =')
+				debugPrint(data)
+				print('one =')
+				debugPrint(one)
+				print('two =')
+				debugPrint(two)
+				print('three =')
+				debugPrint(three)
+			end
+
+			local result = originalPreProcessFn(one, two, three)
+			if not(result) then return result end
+
+			if fileName:find('era_b/com_1_1x2_02.con') then
+				print('result =')
+				debugPrint(result)
+			end
+		end
+
 		local originalUpdateFn = data.updateFn
 		data.updateFn = function(params)
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
-print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName, 'result = ')
+print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
 if fileName:find('era_b/com_1_1x2_02.con') then
-	-- debugPrint(result)
-	-- print('params =')
-	-- debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
+	print('result =')
+	debugPrint(result)
+	print('data =')
+	debugPrint(data)
+	print('params =')
+	debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
 end
--- print('data =')
--- debugPrint(data)
 -- local sampleResult = {
 -- 	personCapacity = {
 -- 		capacity = 4,
