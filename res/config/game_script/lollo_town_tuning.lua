@@ -12,17 +12,19 @@ local _state = {
 }
 local _utils = {
     guiAddTownStatButtons = function(windowId, townId, common)
-        -- LOLLO TODO put this in a UI that is common to all towns
-        print('town stats window opened, id, name, param, api.gui.util.getById ==')
-        -- debugPrint(windowId)
-        -- debugPrint(name)
-        -- debugPrint(param)
-        -- debugPrint(api.gui.util.getById(windowId))
+        -- print('town stats window opened, id, name, param, api.gui.util.getById ==')
+        local window = api.gui.util.getById(windowId)
+        window:setResizable(true)
 
-        local windowContent = api.gui.util.getById(windowId):getContent()
-        local editorTab = windowContent:getTab(3)
-        local editorTabLayout = editorTab:getLayout()
-
+        local windowContent = window:getContent()
+        local tuningComponent = api.gui.comp.Component.new('TUNING')
+        tuningComponent:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        windowContent:insertTab(
+            api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
+            tuningComponent,
+            3
+        )
+        local tuningLayout = tuningComponent:getLayout()
 
         local capacityFactorTextViewTitle = api.gui.comp.TextView.new('Capacity Factor')
         local capacityFactorTextViewDown = api.gui.comp.TextView.new("-")
@@ -60,23 +62,30 @@ local _utils = {
         personCapacityFactorButtonUp:setId('lolloTownTuning_PersonCapacityFactorButtonUp_' .. tostring(townId))
         -- buttonUp:setStyleClassList({ "positive" })
 
-        editorTabLayout:addItem(capacityFactorTextViewTitle)
+        tuningLayout:addItem(capacityFactorTextViewTitle)
         local capacityTable = api.gui.comp.Table.new(1, 'NONE')
         capacityTable:setNumCols(3)
         capacityTable:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
-        editorTabLayout:addItem(capacityTable)
+        tuningLayout:addItem(capacityTable)
 
-        editorTabLayout:addItem(consumptionFactorTextViewTitle)
+        tuningLayout:addItem(consumptionFactorTextViewTitle)
         local consumptionTable = api.gui.comp.Table.new(1, 'NONE')
         consumptionTable:setNumCols(3)
         consumptionTable:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
-        editorTabLayout:addItem(consumptionTable)
+        tuningLayout:addItem(consumptionTable)
 
-        editorTabLayout:addItem(personCapacityFactorTextViewTitle)
+        tuningLayout:addItem(personCapacityFactorTextViewTitle)
         local personCapacityTable = api.gui.comp.Table.new(1, 'NONE')
         personCapacityTable:setNumCols(3)
         personCapacityTable:addRow({personCapacityFactorButtonDown, personCapacityFactorTextViewValue, personCapacityFactorButtonUp})
-        editorTabLayout:addItem(personCapacityTable)
+        tuningLayout:addItem(personCapacityTable)
+
+        -- LOLLO TODO this does not work
+        local minimumSize = window:calcMinimumSize()
+        local newSize = api.gui.util.Size.new()
+        newSize.h = minimumSize.h
+        newSize.w = minimumSize.w + 100
+        window:setMinimumSize(newSize)
     end,
     guiUpdateCapacityFactorValue = function()
         if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
@@ -215,10 +224,6 @@ debugPrint(commonData.towns.get())
     end,
     alterConsumptionFactor = function(isUp)
         print('alterConsumptionFactor starting, isConsumptionFactorUp =', isUp)
-        -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
-        -- for _, buildingId in pairs(buildings) do
-        --     _utils.replaceBuildingWithSelf_dumps(buildingId)
-        -- end
 print('commonData.common.get() before =')
 debugPrint(commonData.common.get())
         commonData.common.setConsumptionFactor(isUp)
@@ -233,10 +238,6 @@ debugPrint(commonData.towns.get())
     end,
     alterPersonCapacityFactor = function(isUp)
         print('alterPersonCapacityFactor starting, isPersonCapacityFactorUp =', isUp)
-        -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
-        -- for _, buildingId in pairs(buildings) do
-        --     _utils.replaceBuildingWithSelf_dumps(buildingId)
-        -- end
 print('commonData.common.get() before =')
 debugPrint(commonData.common.get())
         commonData.common.setPersonCapacityFactor(isUp)
@@ -252,10 +253,6 @@ debugPrint(commonData.towns.get())
     alterTownRequirements = function(townId, consumptionFactorDelta)
         -- LOLLO TODO implement this and its UI
         print('alterTownRequirements starting, townId =', townId, 'consumptionFactorDelta =', consumptionFactorDelta)
-        -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
-        -- for _, buildingId in pairs(buildings) do
-        --     _utils.replaceBuildingWithSelf_dumps(buildingId)
-        -- end
         _utils.triggerUpdate4Town(townId)
     end,
 }
