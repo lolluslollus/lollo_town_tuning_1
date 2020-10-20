@@ -4,15 +4,9 @@ local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 local _fileName = _currentDir .. '/commonDataTemp.lua'
 -- print('file name =', _fileName)
 
-local _defaultCapacityFactorDelta = 0.49
 local _defaultCapacityFactor = 1.0
-local _defaultConsumptionFactorDelta = 0.59
 local _defaultConsumptionFactor = 1.2
-local _defaultPersonCapacityFactorDelta = 0.49
 local _defaultPersonCapacityFactor = 1.0
-local _maxCapacityFactor = 2.0
-local _maxConsumptionFactor = 2.4
-local _maxPersonCapacityFactor = 2.0
 
 local helper = {
     cargoTypes = {
@@ -44,40 +38,118 @@ local helper = {
             end
             return result
         end,
-        setCapacityFactor = function(isUp)
-            local newCommon = fileUtils.loadTable(_fileName)
-            if type(newCommon.capacityFactor) ~= 'number' then return end
-            if isUp and newCommon.capacityFactor + _defaultCapacityFactorDelta > _maxCapacityFactor then return end
-            if not(isUp) and newCommon.capacityFactor - _defaultCapacityFactorDelta < 0 then return end
+        getCapacityFactorIndex = function(factor)
+            if type(factor) ~= 'number' then factor = _defaultCapacityFactor end
 
-            if isUp then newCommon.capacityFactor = newCommon.capacityFactor + _defaultCapacityFactorDelta
-            else newCommon.capacityFactor = newCommon.capacityFactor - _defaultCapacityFactorDelta
+            local result = 3
+            if factor <= 0.1 then
+                result = 1
+            elseif factor == 0.5 then
+                result = 2
+            elseif factor == 1.5 then
+                result = 4
+            elseif factor >= 2 then
+                result = 5
             end
 
+            return result
+        end,
+        setCapacityFactor = function(index)
+            if type(index) ~= 'number' then return end
+
+            local newCommon = fileUtils.loadTable(_fileName)
+            if type(newCommon.capacityFactor) ~= 'number' then newCommon.capacityFactor = _defaultCapacityFactor end
+
+            local newFactor = _defaultCapacityFactor
+            if index <= 1 then
+                newFactor = 0.1
+            elseif index == 2 then
+                newFactor = 0.5
+            elseif index == 4 then
+                newFactor = 1.5
+            elseif index >= 5 then
+                newFactor = 2.0
+            end
+
+            if newFactor == newCommon.capacityFactor then return end
+
+            newCommon.capacityFactor = newFactor
             fileUtils.saveTable(newCommon, _fileName)
         end,
-        setConsumptionFactor = function(isUp)
-            local newCommon = fileUtils.loadTable(_fileName)
-            if type(newCommon.consumptionFactor) ~= 'number' then return end
-            if isUp and newCommon.consumptionFactor + _defaultConsumptionFactorDelta > _maxConsumptionFactor then return end
-            if not(isUp) and newCommon.consumptionFactor - _defaultConsumptionFactorDelta < 0 then return end
+        getConsumptionFactorIndex = function(factor)
+            if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
 
-            if isUp then newCommon.consumptionFactor = newCommon.consumptionFactor + _defaultConsumptionFactorDelta
-            else newCommon.consumptionFactor = newCommon.consumptionFactor - _defaultConsumptionFactorDelta
+            local result = 3
+            if factor <= 0.1 then
+                result = 1
+            elseif factor == 0.6 then
+                result = 2
+            elseif factor == 1.8 then
+                result = 4
+            elseif factor >= 2.4 then
+                result = 5
             end
 
+            return result
+        end,
+        setConsumptionFactor = function(index)
+            if type(index) ~= 'number' then return end
+
+            local newCommon = fileUtils.loadTable(_fileName)
+            if type(newCommon.consumptionFactor) ~= 'number' then newCommon.consumptionFactor = _defaultConsumptionFactor end
+
+            local newFactor = _defaultConsumptionFactor
+            if index <= 1 then
+                newFactor = 0.1
+            elseif index == 2 then
+                newFactor = 0.6
+            elseif index == 4 then
+                newFactor = 1.8
+            elseif index >= 5 then
+                newFactor = 2.4
+            end
+
+            if newFactor == newCommon.consumptionFactor then return end
+
+            newCommon.consumptionFactor = newFactor
             fileUtils.saveTable(newCommon, _fileName)
         end,
-        setPersonCapacityFactor = function(isUp)
-            local newCommon = fileUtils.loadTable(_fileName)
-            if type(newCommon.personCapacityFactor) ~= 'number' then return end
-            if isUp and newCommon.personCapacityFactor + _defaultPersonCapacityFactorDelta > _maxPersonCapacityFactor then return end
-            if not(isUp) and newCommon.personCapacityFactor - _defaultPersonCapacityFactorDelta < 0 then return end
+        getPersonCapacityFactorIndex = function(factor)
+            if type(factor) ~= 'number' then factor = _defaultPersonCapacityFactor end
 
-            if isUp then newCommon.personCapacityFactor = newCommon.personCapacityFactor + _defaultPersonCapacityFactorDelta
-            else newCommon.personCapacityFactor = newCommon.personCapacityFactor - _defaultPersonCapacityFactorDelta
+            local result = 3
+            if factor <= 0.1 then
+                result = 1
+            elseif factor == 0.5 then
+                result = 2
+            elseif factor == 1.5 then
+                result = 4
+            elseif factor >= 2.0 then
+                result = 5
             end
 
+            return result
+        end,
+        setPersonCapacityFactor = function(index)
+            if type(index) ~= 'number' then return end
+
+            local newCommon = fileUtils.loadTable(_fileName)
+            if type(newCommon.personCapacityFactor) ~= 'number' then newCommon.personCapacityFactor = _defaultPersonCapacityFactor end
+
+            local newFactor = _defaultPersonCapacityFactor
+            if index <= 1 then
+                newFactor = 0.1
+            elseif index == 2 then
+                newFactor = 0.5
+            elseif index == 4 then
+                newFactor = 1.5
+            elseif index >= 5 then
+                newFactor = 2.0
+            end
+
+            if newFactor == newCommon.personCapacityFactor then return end
+
+            newCommon.personCapacityFactor = newFactor
             fileUtils.saveTable(newCommon, _fileName)
         end,
     },
