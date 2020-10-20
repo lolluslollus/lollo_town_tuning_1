@@ -7,7 +7,8 @@ end
 local _eventId = '__lolloTownTuningEvent__'
 local _state = {
     townId4CapacityFactorNeedingUpdate = false,
-    townId4ConsumptionFactorNeedingUpdate = false
+    townId4ConsumptionFactorNeedingUpdate = false,
+    townId4PersonCapacityFactorNeedingUpdate = false,
 }
 local _utils = {
     guiAddTownStatButtons = function(windowId, townId, common)
@@ -22,34 +23,41 @@ local _utils = {
         local editorTab = windowContent:getTab(3)
         local editorTabLayout = editorTab:getLayout()
 
-        local consumptionFactorTextViewTitle = api.gui.comp.TextView.new('Consumption Factor')
-
-        local consumptionFactorTextViewDown = api.gui.comp.TextView.new("-")
-        local consumptionFactorButtonDown = api.gui.comp.Button.new(consumptionFactorTextViewDown, true)
-        consumptionFactorButtonDown:setId('lolloConsumptionFactorButtonDown_' .. tostring(townId))
-        -- buttonDown:setStyleClassList({ "negative" })
-
-        local consumptionFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.consumptionFactor))
-        consumptionFactorTextViewValue:setId('lolloConsumptionFactorValue_' .. tostring(townId))
-
-        local consumptionFactorTextViewUp = api.gui.comp.TextView.new("+")
-        local consumptionFactorButtonUp = api.gui.comp.Button.new(consumptionFactorTextViewUp, true)
-        consumptionFactorButtonUp:setId('lolloConsumptionFactorButtonUp_' .. tostring(townId))
-        -- buttonUp:setStyleClassList({ "positive" })
 
         local capacityFactorTextViewTitle = api.gui.comp.TextView.new('Capacity Factor')
-
         local capacityFactorTextViewDown = api.gui.comp.TextView.new("-")
         local capacityFactorButtonDown = api.gui.comp.Button.new(capacityFactorTextViewDown, true)
-        capacityFactorButtonDown:setId('lolloCapacityFactorButtonDown_' .. tostring(townId))
+        capacityFactorButtonDown:setId('lolloTownTuning_CapacityFactorButtonDown_' .. tostring(townId))
         -- buttonDown:setStyleClassList({ "negative" })
-
         local capacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.capacityFactor))
-        capacityFactorTextViewValue:setId('lolloCapacityFactorValue_' .. tostring(townId))
-
+        capacityFactorTextViewValue:setId('lolloTownTuning_CapacityFactorValue_' .. tostring(townId))
         local capacityFactorTextViewUp = api.gui.comp.TextView.new("+")
         local capacityFactorButtonUp = api.gui.comp.Button.new(capacityFactorTextViewUp, true)
-        capacityFactorButtonUp:setId('lolloCapacityFactorButtonUp_' .. tostring(townId))
+        capacityFactorButtonUp:setId('lolloTownTuning_CapacityFactorButtonUp_' .. tostring(townId))
+        -- buttonUp:setStyleClassList({ "positive" })
+
+        local consumptionFactorTextViewTitle = api.gui.comp.TextView.new('Consumption Factor')
+        local consumptionFactorTextViewDown = api.gui.comp.TextView.new("-")
+        local consumptionFactorButtonDown = api.gui.comp.Button.new(consumptionFactorTextViewDown, true)
+        consumptionFactorButtonDown:setId('lolloTownTuning_ConsumptionFactorButtonDown_' .. tostring(townId))
+        -- buttonDown:setStyleClassList({ "negative" })
+        local consumptionFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.consumptionFactor))
+        consumptionFactorTextViewValue:setId('lolloTownTuning_ConsumptionFactorValue_' .. tostring(townId))
+        local consumptionFactorTextViewUp = api.gui.comp.TextView.new("+")
+        local consumptionFactorButtonUp = api.gui.comp.Button.new(consumptionFactorTextViewUp, true)
+        consumptionFactorButtonUp:setId('lolloTownTuning_ConsumptionFactorButtonUp_' .. tostring(townId))
+        -- buttonUp:setStyleClassList({ "positive" })
+
+        local personCapacityFactorTextViewTitle = api.gui.comp.TextView.new('Person Capacity Factor')
+        local personCapacityFactorTextViewDown = api.gui.comp.TextView.new("-")
+        local personCapacityFactorButtonDown = api.gui.comp.Button.new(personCapacityFactorTextViewDown, true)
+        personCapacityFactorButtonDown:setId('lolloTownTuning_PersonCapacityFactorButtonDown_' .. tostring(townId))
+        -- buttonDown:setStyleClassList({ "negative" })
+        local personCapacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.personCapacityFactor))
+        personCapacityFactorTextViewValue:setId('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(townId))
+        local personCapacityFactorTextViewUp = api.gui.comp.TextView.new("+")
+        local personCapacityFactorButtonUp = api.gui.comp.Button.new(personCapacityFactorTextViewUp, true)
+        personCapacityFactorButtonUp:setId('lolloTownTuning_PersonCapacityFactorButtonUp_' .. tostring(townId))
         -- buttonUp:setStyleClassList({ "positive" })
 
         editorTabLayout:addItem(capacityFactorTextViewTitle)
@@ -63,27 +71,42 @@ local _utils = {
         consumptionTable:setNumCols(3)
         consumptionTable:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
         editorTabLayout:addItem(consumptionTable)
+
+        editorTabLayout:addItem(personCapacityFactorTextViewTitle)
+        local personCapacityTable = api.gui.comp.Table.new(1, 'NONE')
+        personCapacityTable:setNumCols(3)
+        personCapacityTable:addRow({personCapacityFactorButtonDown, personCapacityFactorTextViewValue, personCapacityFactorButtonUp})
+        editorTabLayout:addItem(personCapacityTable)
     end,
     guiUpdateCapacityFactorValue = function()
         if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
 
-        local capacityFactorValue = api.gui.util.getById('lolloCapacityFactorValue_' .. tostring(_state.townId4CapacityFactorNeedingUpdate))
-        if capacityFactorValue then
-            capacityFactorValue:setText(tostring(commonData.common.get().capacityFactor or 'NIL'))
+        local textBox = api.gui.util.getById('lolloTownTuning_CapacityFactorValue_' .. tostring(_state.townId4CapacityFactorNeedingUpdate))
+        if textBox then
+            textBox:setText(tostring(commonData.common.get().capacityFactor or 'NIL'))
         end
         _state.townId4CapacityFactorNeedingUpdate = false
     end,
     guiUpdateConsumptionFactorValue = function()
         if type(_state.townId4ConsumptionFactorNeedingUpdate) ~= 'number' then return end
 
-        local consumptionFactorValue = api.gui.util.getById('lolloConsumptionFactorValue_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
-        if consumptionFactorValue then
-            consumptionFactorValue:setText(tostring(commonData.common.get().consumptionFactor or 'NIL'))
+        local textBox = api.gui.util.getById('lolloTownTuning_ConsumptionFactorValue_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
+        if textBox then
+            textBox:setText(tostring(commonData.common.get().consumptionFactor or 'NIL'))
         end
         _state.townId4ConsumptionFactorNeedingUpdate = false
     end,
+    guiUpdatePersonCapacityFactorValue = function()
+        if type(_state.townId4PersonCapacityFactorNeedingUpdate) ~= 'number' then return end
+
+        local textBox = api.gui.util.getById('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(_state.townId4PersonCapacityFactorNeedingUpdate))
+        if textBox then
+            textBox:setText(tostring(commonData.common.get().personCapacityFactor or 'NIL'))
+        end
+        _state.townId4PersonCapacityFactorNeedingUpdate = false
+    end,
     replaceBuildingWithSelf = function(oldBuildingId)
-        -- multithreading nightmare
+        -- no good, leads to multithreading nightmare
         print('oldBuildingId =', oldBuildingId or 'NIL')
         if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
 
@@ -91,268 +114,50 @@ local _utils = {
         print('oldBuilding =')
         debugPrint(oldBuilding)
         if not(oldBuilding) then return end
-        print('ONE')
         -- skip buildings that do not accept freight
         if not(oldBuilding.personCapacity) then return end
-        print('TWO')
         if type(oldBuilding.stockList) ~= 'number' then return end
-        print('THREE')
-        print('oldBuilding.stockList =')
-        debugPrint(oldBuilding.stockList)
-        print('type(oldBuilding.stockList) =', type(oldBuilding.stockList))
         if oldBuilding.stockList < 0 then return end
-        print('FOUR')
         local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
         print('oldConstructionId =')
         debugPrint(oldConstructionId)
         if type(oldConstructionId) ~= 'number' then return end
-        print('FIVE')
         if oldConstructionId < 0 then return end
-        print('SIX')
-        -- local oldConstruction = api.engine.getComponent(oldConstructionId, api.type.ComponentType.CONSTRUCTION)
-        -- print('oldConstruction =')
-        -- debugPrint(oldConstruction)
 
-        local oldConstruction2 = game.interface.getEntity(oldConstructionId)
-        print('oldConstruction2 =')
-        debugPrint(oldConstruction2)
-
-        local newId = game.interface.upgradeConstruction(
-            oldConstruction2.id,
-            oldConstruction2.fileName,
-            -- leadingStation.params -- NO!
-            arrayUtils.cloneOmittingFields(oldConstruction2.params, {'seed'})
-        )
-        print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
-    end,
---[[     replaceBuildingWithSelf_dumps = function(oldBuildingId)
-        print('oldBuildingId =', oldBuildingId or 'NIL')
-        if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
-
-        local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
-        print('oldBuilding =')
-        debugPrint(oldBuilding)
-        -- if not(oldBuilding) or not(oldBuilding.personCapacity) or not(oldBuilding.stockList) then return end
-        -- skip buildings that do not accept stuff
-        if not(oldBuilding) or not(oldBuilding.personCapacity)
-        or type(oldBuilding.stockList) ~= 'number' or oldBuilding.stockList < 0 then return end
-
-        local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
-        print('oldConstructionId =', oldConstructionId or 'NIL')
-        if true then return end
-        local oldConstruction = api.engine.getComponent(oldConstructionId, api.type.ComponentType.CONSTRUCTION)
+        local oldConstruction = game.interface.getEntity(oldConstructionId)
         print('oldConstruction =')
         debugPrint(oldConstruction)
 
-        local sampleCommercialConstruction = {
-            fileName = "building/era_b/com_1_2x3_01.con",
-            params = {
-                capacity = 3,
-                cargoTypes = {
-                    [1] = "TOOLS",
-                },
-                depth = 30,
-                parcelFace = {
-                    [1] = {
-                    [1] = -8.6212158203125,
-                    [2] = 0.100341796875,
-                    [3] = 0.046108245849609,
-                    },
-                    [2] = {
-                    [1] = 0,
-                    [2] = 0,
-                    [3] = 0,
-                    },
-                    [3] = {
-                    [1] = 8.5859375,
-                    [2] = 0.100341796875,
-                    [3] = -0.57262802124023,
-                    },
-                    [4] = {
-                    [1] = 8.02685546875,
-                    [2] = 24.093505859375,
-                    [3] = -0.57262802124023,
-                    },
-                    [5] = {
-                    [1] = -0.0013427734375,
-                    [2] = 24.000244140625,
-                    [3] = 0,
-                    },
-                    [6] = {
-                    [1] = -8.0616455078125,
-                    [2] = 24.093505859375,
-                    [3] = 0.046108245849609,
-                    },
-                },
-                seed = -26138,
-                width = 20,
-            },
-            -- transf = {
-            --   cols = <function>,
-            -- },
-            timeBuilt = 0,
-            frozenNodes = {
-            },
-            frozenEdges = {
-            },
-            depots = {
-            },
-            stations = {
-            },
-            simBuildings = {
-            },
-            townBuildings = {
-                [1] = 5756,
-            },
-            particleSystems = {
-                [1] = 23559,
-            },
-        }
-
-        local sampleResidentialConstruction = {
-            fileName = "building/era_b/res_1_4x4_04.con",
-            params = {
-                capacity = 4,
-                cargoTypes = {
-                },
-                depth = 40,
-                parcelFace = {
-                    [1] = {
-                    [1] = -16.015747070313,
-                    [2] = -0.000244140625,
-                    [3] = -0.30424308776855,
-                    },
-                    [2] = {
-                    [1] = -8.00634765625,
-                    [2] = 0.000244140625,
-                    [3] = -0.24058723449707,
-                    },
-                    [3] = {
-                    [1] = 0,
-                    [2] = 0,
-                    [3] = 0,
-                    },
-                    [4] = {
-                    [1] = 8.0028076171875,
-                    [2] = -0.000244140625,
-                    [3] = 0.38837242126465,
-                    },
-                    [5] = {
-                    [1] = 16.001953125,
-                    [2] = -0.000244140625,
-                    [3] = 0.89117240905762,
-                    },
-                    [6] = {
-                    [1] = 16.001708984375,
-                    [2] = 31.999755859375,
-                    [3] = 0.89117240905762,
-                    },
-                    [7] = {
-                    [1] = 8.0029296875,
-                    [2] = 31.999755859375,
-                    [3] = 0.38837242126465,
-                    },
-                    [8] = {
-                    [1] = 0,
-                    [2] = 32,
-                    [3] = 0,
-                    },
-                    [9] = {
-                    [1] = -8.0062255859375,
-                    [2] = 32.000244140625,
-                    [3] = -0.24058723449707,
-                    },
-                    [10] = {
-                    [1] = -16.015869140625,
-                    [2] = 31.999755859375,
-                    [3] = -0.30424308776855,
-                    },
-                },
-                seed = -26822,
-                width = 40,
-            },
-            -- transf = {
-            --   cols = <function>,
-            -- },
-            timeBuilt = 0,
-            frozenNodes = {
-            },
-            frozenEdges = {
-            },
-            depots = {
-            },
-            stations = {
-            },
-            simBuildings = {
-            },
-            townBuildings = {
-                [1] = 21752,
-            },
-            particleSystems = {
-                [1] = 21753,
-                [2] = 21754,
-            },
-        }
-        local newConstruction = api.type.SimpleProposal.ConstructionEntity.new()
-        newConstruction.fileName = oldConstruction.fileName
-        print('1, fileName =', newConstruction.fileName)
-
-        -- newConstruction.timeBuilt = oldConstruction.timeBuilt -- dumps
-        -- newConstruction.simBuildings = oldConstruction.simBuildings -- dumps
-        -- newConstruction.townBuildings = oldConstruction.townBuildings
-        -- newConstruction.particleSystems = oldConstruction.particleSystems
-        print('2')
-        print('newConstruction.params before =')
-        debugPrint(newConstruction.params)
-        print('3')
-        -- newConstruction.params = oldConstruction.params -- dumps
-        print('4')
-        -- cannot clone this userdata dynamically, coz it won't take pairs and ipairs
-        -- this table must be handled this way, they are all different...
-        newConstruction.params = { -- dumps
-            capacity = oldConstruction.params.capacity,
-            cargoTypes = oldConstruction.params.cargoTypes,
-            depth = oldConstruction.params.depth,
-            parcelFace = oldConstruction.params.parcelFace,
-            -- seed = oldConstruction.params.seed + 1,
-            -- seed = 123e4,
-            seed = oldConstruction.params.seed - 1,
-            width = oldConstruction.params.width
-        }
-        print('newConstruction.params =')
-        debugPrint(newConstruction.params)
-        print('8')
-        newConstruction.transf = oldConstruction.transf
-        print('9')
-        -- newConstruction.name = 'LOLLO snapping lorry bay'
-        -- newConstruction.playerEntity = api.engine.util.getPlayer()
-
-        local proposal = api.type.SimpleProposal.new()
-        -- LOLLO NOTE there are asymmetries how different tables are handled.
-        -- This one requires this system, UG says they will document it or amend it.
-        proposal.constructionsToRemove = { oldConstructionId }
-        print('10')
-        proposal.constructionsToAdd[1] = newConstruction
-        print('11')
-
-        local context = api.type.Context:new()
-        print('12')
-        local cmd = api.cmd.make.buildProposal(proposal, context, true) -- the 3rd param is "ignore errors"
-        print('13')
-        api.cmd.sendCommand(
-            cmd,
-            function(res, success)
-                -- print('LOLLO replaceBuildingWithSelf_dumps res = ')
-                -- debugPrint(res)
-                --for _, v in pairs(res.entities) do print(v) end
-                -- print('LOLLO replaceBuildingWithSelf_dumps success = ')
-                -- debugPrint(success)
-                -- if success then
-                    -- if I bulldoze here, the station will get the new name
-                -- end
-            end
+        local newId = game.interface.upgradeConstruction(
+            oldConstruction.id,
+            oldConstruction.fileName,
+            -- leadingStation.params -- NO!
+            arrayUtils.cloneOmittingFields(oldConstruction.params, {'seed'})
         )
-    end ]]
+        print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
+    end,
+    triggerUpdate4Town = function(townId)
+        print('type(townId) = ', type(townId))
+        print('townId = ', townId or 'NIL')
+        if type(townId) ~= 'number' or townId < 1 then return end
+
+        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+        if not(townData) then return end
+
+        -- res, com, ind.
+        local oldCargoNeeds = townData.cargoNeeds
+        if not(oldCargoNeeds) then return end
+
+        -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+        -- local newCargoNeeds = oldCargoNeeds
+        -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+        --     print(cargoTypeId, cargoSupply)
+        -- end
+        api.cmd.sendCommand(
+            -- this triggers updateFn for all the town buildings
+            api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
+        )
+    end,
     updateCapacityFactorValue = function(townId)
         if type(townId) ~= 'number' or townId < 1 then return end
 
@@ -363,44 +168,29 @@ local _utils = {
 
         _state.townId4ConsumptionFactorNeedingUpdate = townId
     end,
+    updatePersonCapacityFactorValue = function(townId)
+        if type(townId) ~= 'number' or townId < 1 then return end
+
+        _state.townId4PersonCapacityFactorNeedingUpdate = townId
+    end,
 }
 local _actions = {
-    alterCapacityFactor = function(isCapacityFactorUp)
-        print('alterCapacityFactor starting, isCapacityFactorUp =', isCapacityFactorUp)
+    alterCapacityFactor = function(isUp)
+        print('alterCapacityFactor starting, isCapacityFactorUp =', isUp)
         -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
         -- for _, buildingId in pairs(buildings) do
         --     _utils.replaceBuildingWithSelf_dumps(buildingId)
         -- end
 print('commonData.common.get() before =')
 debugPrint(commonData.common.get())
-
-print('commonData.towns.get() before =')
+        commonData.common.setCapacityFactor(isUp)
+print('commonData.common.get() after =')
+debugPrint(commonData.common.get())
+print('commonData.towns.get() after =')
 debugPrint(commonData.towns.get())
-        commonData.common.setCapacityFactor(isCapacityFactorUp)
-        print('commonData.towns.get() after =')
-        debugPrint(commonData.towns.get())
-        print('commonData.common.get() after =')
-        debugPrint(commonData.common.get())
 
         for townId, _ in pairs(commonData.towns.get()) do
-            print('type(townId) = ', type(townId))
-            print('townId = ', townId)
-            local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-            if not(not(townData)) then
-                -- res, com, ind.
-                local oldCargoNeeds = townData.cargoNeeds
-                if not(not(oldCargoNeeds)) then
-                    -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-                    -- local newCargoNeeds = oldCargoNeeds
-                    -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-                    --     print(cargoTypeId, cargoSupply)
-                    -- end
-                    api.cmd.sendCommand(
-                        -- this triggers updateFn for all the town buildings
-                        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
-                    )
-                end
-            end
+            _utils.triggerUpdate4Town(townId)
         end
     end,
     alterCapacityFactorByTown = function(townId, isCapacityFactorUp)
@@ -423,42 +213,40 @@ debugPrint(commonData.towns.get())
         end
         print('alterCapacityFactorByTown ending')
     end,
-    alterConsumptionFactor = function(isConsumptionFactorUp)
-        print('alterConsumptionFactor starting, isConsumptionFactorUp =', isConsumptionFactorUp)
+    alterConsumptionFactor = function(isUp)
+        print('alterConsumptionFactor starting, isConsumptionFactorUp =', isUp)
         -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
         -- for _, buildingId in pairs(buildings) do
         --     _utils.replaceBuildingWithSelf_dumps(buildingId)
         -- end
 print('commonData.common.get() before =')
 debugPrint(commonData.common.get())
-
-print('commonData.towns.get() before =')
+        commonData.common.setConsumptionFactor(isUp)
+print('commonData.common.get() after =')
+debugPrint(commonData.common.get())
+print('commonData.towns.get() after =')
 debugPrint(commonData.towns.get())
-        commonData.common.setConsumptionFactor(isConsumptionFactorUp)
-        print('commonData.towns.get() after =')
-        debugPrint(commonData.towns.get())
-        print('commonData.common.get() after =')
-        debugPrint(commonData.common.get())
 
         for townId, _ in pairs(commonData.towns.get()) do
-            print('type(townId) = ', type(townId))
-            print('townId = ', townId)
-            local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-            if not(townData) then return end
+            _utils.triggerUpdate4Town(townId)
+        end
+    end,
+    alterPersonCapacityFactor = function(isUp)
+        print('alterPersonCapacityFactor starting, isPersonCapacityFactorUp =', isUp)
+        -- local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
+        -- for _, buildingId in pairs(buildings) do
+        --     _utils.replaceBuildingWithSelf_dumps(buildingId)
+        -- end
+print('commonData.common.get() before =')
+debugPrint(commonData.common.get())
+        commonData.common.setPersonCapacityFactor(isUp)
+print('commonData.common.get() after =')
+debugPrint(commonData.common.get())
+print('commonData.towns.get() after =')
+debugPrint(commonData.towns.get())
 
-            -- res, com, ind.
-            local oldCargoNeeds = townData.cargoNeeds
-            if not(oldCargoNeeds) then return end
-
-            -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-            -- local newCargoNeeds = oldCargoNeeds
-            -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-            --     print(cargoTypeId, cargoSupply)
-            -- end
-            api.cmd.sendCommand(
-                -- this triggers updateFn for all the town buildings
-                api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
-            )
+        for townId, _ in pairs(commonData.towns.get()) do
+            _utils.triggerUpdate4Town(townId)
         end
     end,
     alterTownRequirements = function(townId, consumptionFactorDelta)
@@ -468,24 +256,7 @@ debugPrint(commonData.towns.get())
         -- for _, buildingId in pairs(buildings) do
         --     _utils.replaceBuildingWithSelf_dumps(buildingId)
         -- end
-        if type(townId) ~= 'number' or townId < 1 then return end
-
-        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-        if not(townData) then return end
-
-        -- res, com, ind.
-        local oldCargoNeeds = townData.cargoNeeds
-        if not(oldCargoNeeds) then return end
-
-        -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-        -- local newCargoNeeds = oldCargoNeeds
-        -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-        --     print(cargoTypeId, cargoSupply)
-        -- end
-        api.cmd.sendCommand(
-            -- this triggers updateFn for all the town buildings
-            api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
-        )
+        _utils.triggerUpdate4Town(townId)
     end,
 }
 
@@ -497,24 +268,28 @@ function data()
         handleEvent = function(src, id, name, param)
             if (id ~= _eventId or type(param) ~= 'table') then return end
 
-            if name == 'lolloCapacityFactorButtonDown' then
-                print('param.townId =')
-                debugPrint(param.townId)
+            if name == 'lolloTownTuning_CapacityFactorButtonDown' then
                 _actions.alterCapacityFactor(false)
                 -- _actions.alterCapacityFactorByTown(param.townId, false)
                 _utils.updateCapacityFactorValue(param.townId)
-            elseif name == 'lolloCapacityFactorButtonUp' then
+            elseif name == 'lolloTownTuning_CapacityFactorButtonUp' then
                 print('param.townId =')
                 debugPrint(param.townId)
                 _actions.alterCapacityFactor(true)
                 -- _actions.alterCapacityFactorByTown(param.townId, true)
                 _utils.updateCapacityFactorValue(param.townId)
-            elseif name == 'lolloConsumptionFactorButtonDown' then
+            elseif name == 'lolloTownTuning_ConsumptionFactorButtonDown' then
                 _actions.alterConsumptionFactor(false)
                 _utils.updateConsumptionFactorValue(param.townId)
-            elseif name == 'lolloConsumptionFactorButtonUp' then
+            elseif name == 'lolloTownTuning_ConsumptionFactorButtonUp' then
                 _actions.alterConsumptionFactor(true)
                 _utils.updateConsumptionFactorValue(param.townId)
+            elseif name == 'lolloTownTuning_PersonCapacityFactorButtonDown' then
+                _actions.alterPersonCapacityFactor(false)
+                _utils.updatePersonCapacityFactorValue(param.townId)
+            elseif name == 'lolloTownTuning_PersonCapacityFactorButtonUp' then
+                _actions.alterPersonCapacityFactor(true)
+                _utils.updatePersonCapacityFactorValue(param.townId)
             end
         end,
         guiHandleEvent = function(id, name, param)
@@ -534,50 +309,74 @@ function data()
                                     break
                                 end
                             end
-                        elseif name == 'button.click' and id:find('lolloCapacityFactorButtonDown_') then
-                            print('LOLLO button down clicked; name, param =')
-                            debugPrint(name)
-                            debugPrint(param)
-                            game.interface.sendScriptEvent(
-                                _eventId, -- id
-                                'lolloCapacityFactorButtonDown', -- name
-                                { -- param
-                                    townId = tonumber(id:sub(id:find('_') + 1))
-                                }
-                            )
-                        elseif name == 'button.click' and id:find('lolloCapacityFactorButtonUp_') then
-                            print('LOLLO button up clicked; name, param =')
-                            debugPrint(name)
-                            debugPrint(param)
-                            game.interface.sendScriptEvent(
-                                _eventId, -- id
-                                'lolloCapacityFactorButtonUp', -- name
-                                { -- param
-                                    townId = tonumber(id:sub(id:find('_') + 1))
-                                }
-                            )
-                        elseif name == 'button.click' and id:find('lolloConsumptionFactorButtonDown_') then
-                            print('LOLLO button down clicked; name, param =')
-                            debugPrint(name)
-                            debugPrint(param)
-                            game.interface.sendScriptEvent(
-                                _eventId, -- id
-                                'lolloConsumptionFactorButtonDown', -- name
-                                { -- param
-                                    townId = tonumber(id:sub(id:find('_') + 1))
-                                }
-                            )
-                        elseif name == 'button.click' and id:find('lolloConsumptionFactorButtonUp_') then
-                            print('LOLLO button up clicked; name, param =')
-                            debugPrint(name)
-                            debugPrint(param)
-                            game.interface.sendScriptEvent(
-                                _eventId, -- id
-                                'lolloConsumptionFactorButtonUp', -- name
-                                { -- param
-                                    townId = tonumber(id:sub(id:find('_') + 1))
-                                }
-                            )
+                        elseif name == 'button.click' and id:find('lolloTownTuning_') then
+                            if id:find('lolloTownTuning_CapacityFactorButtonDown_') then
+                                print('LOLLO button down clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_CapacityFactorButtonDown', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            elseif id:find('lolloTownTuning_CapacityFactorButtonUp_') then
+                                print('LOLLO button up clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_CapacityFactorButtonUp', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            elseif id:find('lolloTownTuning_ConsumptionFactorButtonDown_') then
+                                print('LOLLO button down clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_ConsumptionFactorButtonDown', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            elseif id:find('lolloTownTuning_ConsumptionFactorButtonUp_') then
+                                print('LOLLO button up clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_ConsumptionFactorButtonUp', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            elseif id:find('lolloTownTuning_PersonCapacityFactorButtonDown_') then
+                                print('LOLLO button down clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_PersonCapacityFactorButtonDown', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            elseif id:find('lolloTownTuning_PersonCapacityFactorButtonUp_') then
+                                print('LOLLO button up clicked; name, param =')
+                                debugPrint(name)
+                                debugPrint(param)
+                                game.interface.sendScriptEvent(
+                                    _eventId, -- id
+                                    'lolloTownTuning_PersonCapacityFactorButtonUp', -- name
+                                    { -- param
+                                        townId = tonumber(id:sub(id:find('_') + 1))
+                                    }
+                                )
+                            end
                         end
                     end,
                     _myErrorHandler
@@ -589,12 +388,14 @@ function data()
         guiUpdate = function()
             _utils.guiUpdateCapacityFactorValue()
             _utils.guiUpdateConsumptionFactorValue()
+            _utils.guiUpdatePersonCapacityFactorValue()
         end,
         load = function(data)
             if not(data) then return end
 
             _state.townId4CapacityFactorNeedingUpdate = data.townId4CapacityFactorNeedingUpdate or false
             _state.townId4ConsumptionFactorNeedingUpdate = data.townId4ConsumptionFactorNeedingUpdate or false
+            _state.townId4PersonCapacityFactorNeedingUpdate = data.townId4PersonCapacityFactorNeedingUpdate or false
         end,
         save = function()
             if not _state then _state = {} end

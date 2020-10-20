@@ -7,10 +7,7 @@ function data()
 		-- alter properties of all buildings in all towns
 		-- this fires for every instance of a building, but it does not contain instance-specific data,
 		-- such as the building town or location.
-		print('cc 1')
-		if not(data) or (data.type ~= "TOWN_BUILDING") or not(data.updateFn) then return data end
-		print('cc 2')
-		print('type(data.updateFn) =', type(data.updateFn))
+		if not(data) or (data.type ~= "TOWN_BUILDING") or type(data.updateFn) ~= 'function' then return data end
 		-- local originalPreProcessFn = data.preProcessFn
 		-- data.preProcessFn = function(one, two, three)
 		-- 	print('construction.preProcessFn starting for TOWN_BUILDING with filename =', fileName)
@@ -34,21 +31,26 @@ function data()
 		-- 	end
 		-- end
 
-		data.upgradeFn = function(_) end
+		-- LOLLO TODO do we need this?
+		if type(data.upgradeFn) ~= 'function' then
+			data.upgradeFn = function(_) end
+		end
+
 		local originalUpdateFn = data.updateFn
 		data.updateFn = function(params)
-			print('cc 3')
+			-- print('cc 3')
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
-print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
-if fileName:find('era_b/com_1_1x2_02.con') then
-	print('result =')
-	debugPrint(result)
-	print('data =')
-	debugPrint(data)
-	print('params =')
-	debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
-end
+
+			print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
+			if fileName:find('era_b/com_1_1x2_02.con') then
+				print('result =')
+				debugPrint(result)
+				print('data =')
+				debugPrint(data)
+				print('params =')
+				debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
+			end
 -- local sampleResult = {
 -- 	personCapacity = {
 -- 		capacity = 4,
@@ -63,34 +65,27 @@ end
 -- 		output = { },
 -- 	},
 -- }
+			local common = _commonData.common.get()
+			-- print('_commonData.common.get() =')
+			-- debugPrint(common)
 			if result.rule then
 				-- LOLLO TODO this needs testing: does the consumption factor really change things?
-				-- LOLLO TODO how do I find out where a construction is? There seems to be no way.
-				-- Perhaps I need a different load modifier?
+				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
 				-- print('result.rule.capacity before =', result.rule.capacity)
 				-- print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
-				-- this was copied from yeol senseless
-				-- result.rule.capacity = (result.rule.capacity + math.random() * 1.5) * _mySettings.townBuildingDemandFactor
-				-- this may increase the amount of industrial buildings
-				-- result.rule.capacity = math.ceil(result.rule.capacity * _mySettings.townBuildingDemandFactor)
-				-- this should reduce the amount of cargo required
-                -- result.rule.consumptionFactor = result.rule.consumptionFactor * _mySettings.townBuildingDemandFactor
-                local common = _commonData.common.get()
-				-- print('_commonData.common.get() =')
-				-- debugPrint(common)
-
-                result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
-                result.rule.consumptionFactor = common.consumptionFactor or 1.0
+				result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
+				result.rule.consumptionFactor = common.consumptionFactor or 1.0
 				-- print('result.rule.capacity after =', result.rule.capacity)
 				-- print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
 				-- print('result.personCapacity.capacity before =', result.personCapacity.capacity)
-				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * _mySettings.townBuildingPersonCapacityFactor)
+				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * (common.personCapacityFactor or 1.0))
 				-- print('result.personCapacity.capacity after =', result.personCapacity.capacity)
 			end
+
 			return result
-		end
+		end -- end of updateFn
 
 		return data
 	end

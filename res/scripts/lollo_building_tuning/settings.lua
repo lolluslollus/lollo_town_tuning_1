@@ -53,8 +53,8 @@ results.townBuildingLevelOptions = {
 	},
 }
 
-results.townBuildingDemandFactor = 0.1 -- default would be 1
-results.townBuildingPersonCapacityFactor = 1.0 -- default would be 1
+-- results.townBuildingDemandFactor = 0.1 -- default would be 1
+-- results.townBuildingPersonCapacityFactor = 1.0 -- default would be 1
 results.townDevelopInterval = 20.0 -- was 60.0
 results.townMajorStreetAngleRange = 10.0 -- was 0.0
 
