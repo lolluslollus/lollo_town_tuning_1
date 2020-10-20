@@ -10,179 +10,245 @@ local _state = {
     townId4ConsumptionFactorNeedingUpdate = false,
     townId4PersonCapacityFactorNeedingUpdate = false,
 }
-local _utils = {
-    guiAddTownStatButtons = function(windowId, townId, common)
-        -- print('town stats window opened, id, name, param, api.gui.util.getById ==')
-        local window = api.gui.util.getById(windowId)
-        window:setResizable(true)
+local _utils = {}
+_utils.guiHandleToggleCheckBox = function(newValue, two, three)
+    print('newValue =')
+    debugPrint(newValue)
+    print('two =')
+    debugPrint(two)
+    print('three =')
+    debugPrint(three)
+end
+_utils.guiAddOneTownProps = function(parentLayout, townId)
+    if type(townId) ~= 'number' or townId < 1 then return end
 
-        local windowContent = window:getContent()
-        local tuningComponent = api.gui.comp.Component.new('TUNING')
-        tuningComponent:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
-        windowContent:insertTab(
-            api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
-            tuningComponent,
-            3
-        )
-        local tuningLayout = tuningComponent:getLayout()
+    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    if not(townData) then return end
 
-        local capacityFactorTextViewTitle = api.gui.comp.TextView.new('Capacity Factor')
-        local capacityFactorTextViewDown = api.gui.comp.TextView.new("-")
-        local capacityFactorButtonDown = api.gui.comp.Button.new(capacityFactorTextViewDown, true)
-        capacityFactorButtonDown:setId('lolloTownTuning_CapacityFactorButtonDown_' .. tostring(townId))
-        -- buttonDown:setStyleClassList({ "negative" })
-        local capacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.capacityFactor))
-        capacityFactorTextViewValue:setId('lolloTownTuning_CapacityFactorValue_' .. tostring(townId))
-        local capacityFactorTextViewUp = api.gui.comp.TextView.new("+")
-        local capacityFactorButtonUp = api.gui.comp.Button.new(capacityFactorTextViewUp, true)
-        capacityFactorButtonUp:setId('lolloTownTuning_CapacityFactorButtonUp_' .. tostring(townId))
-        -- buttonUp:setStyleClassList({ "positive" })
+    local residentialTextViewTitle = api.gui.comp.TextView.new(_('Residential'))
+    local commercialTextViewTitle = api.gui.comp.TextView.new(_('Commercial'))
+    local industrialTextViewTitle = api.gui.comp.TextView.new(_('Industrial'))
+    local cargoTypes = commonData.cargoTypes.getAll()
 
-        local consumptionFactorTextViewTitle = api.gui.comp.TextView.new('Consumption Factor')
-        local consumptionFactorTextViewDown = api.gui.comp.TextView.new("-")
-        local consumptionFactorButtonDown = api.gui.comp.Button.new(consumptionFactorTextViewDown, true)
-        consumptionFactorButtonDown:setId('lolloTownTuning_ConsumptionFactorButtonDown_' .. tostring(townId))
-        -- buttonDown:setStyleClassList({ "negative" })
-        local consumptionFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.consumptionFactor))
-        consumptionFactorTextViewValue:setId('lolloTownTuning_ConsumptionFactorValue_' .. tostring(townId))
-        local consumptionFactorTextViewUp = api.gui.comp.TextView.new("+")
-        local consumptionFactorButtonUp = api.gui.comp.Button.new(consumptionFactorTextViewUp, true)
-        consumptionFactorButtonUp:setId('lolloTownTuning_ConsumptionFactorButtonUp_' .. tostring(townId))
-        -- buttonUp:setStyleClassList({ "positive" })
-
-        local personCapacityFactorTextViewTitle = api.gui.comp.TextView.new('Person Capacity Factor')
-        local personCapacityFactorTextViewDown = api.gui.comp.TextView.new("-")
-        local personCapacityFactorButtonDown = api.gui.comp.Button.new(personCapacityFactorTextViewDown, true)
-        personCapacityFactorButtonDown:setId('lolloTownTuning_PersonCapacityFactorButtonDown_' .. tostring(townId))
-        -- buttonDown:setStyleClassList({ "negative" })
-        local personCapacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(common.personCapacityFactor))
-        personCapacityFactorTextViewValue:setId('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(townId))
-        local personCapacityFactorTextViewUp = api.gui.comp.TextView.new("+")
-        local personCapacityFactorButtonUp = api.gui.comp.Button.new(personCapacityFactorTextViewUp, true)
-        personCapacityFactorButtonUp:setId('lolloTownTuning_PersonCapacityFactorButtonUp_' .. tostring(townId))
-        -- buttonUp:setStyleClassList({ "positive" })
-
-        tuningLayout:addItem(capacityFactorTextViewTitle)
-        local capacityTable = api.gui.comp.Table.new(1, 'NONE')
-        capacityTable:setNumCols(3)
-        capacityTable:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
-        tuningLayout:addItem(capacityTable)
-
-        tuningLayout:addItem(consumptionFactorTextViewTitle)
-        local consumptionTable = api.gui.comp.Table.new(1, 'NONE')
-        consumptionTable:setNumCols(3)
-        consumptionTable:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
-        tuningLayout:addItem(consumptionTable)
-
-        tuningLayout:addItem(personCapacityFactorTextViewTitle)
-        local personCapacityTable = api.gui.comp.Table.new(1, 'NONE')
-        personCapacityTable:setNumCols(3)
-        personCapacityTable:addRow({personCapacityFactorButtonDown, personCapacityFactorTextViewValue, personCapacityFactorButtonUp})
-        tuningLayout:addItem(personCapacityTable)
-
-        -- LOLLO TODO this does not work
-        local minimumSize = window:calcMinimumSize()
-        local newSize = api.gui.util.Size.new()
-        newSize.h = minimumSize.h
-        newSize.w = minimumSize.w + 100
-        window:setMinimumSize(newSize)
-    end,
-    guiUpdateCapacityFactorValue = function()
-        if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
-
-        local textBox = api.gui.util.getById('lolloTownTuning_CapacityFactorValue_' .. tostring(_state.townId4CapacityFactorNeedingUpdate))
-        if textBox then
-            textBox:setText(tostring(commonData.common.get().capacityFactor or 'NIL'))
+    local cargoTypesTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
+    cargoTypesTable:setNumCols(3)
+    cargoTypesTable:addRow({residentialTextViewTitle, commercialTextViewTitle, industrialTextViewTitle})
+    for cargoId, cargoData in pairs(cargoTypes) do
+        -- print('cargo id =', cargoId)
+        -- debugPrint(cargoData)
+        local resComp = api.gui.comp.Component.new(_('Residential'))
+        resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+        resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
+        local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+        resCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_resCargoType_' .. tostring(cargoId))
+        -- resCheckBox:onToggle(_utils.guiHandleToggleCheckBox)
+        for _, v in pairs(townData.cargoNeeds[1]) do
+            if v == cargoId then resCheckBox:setSelected(true, false) end
         end
-        _state.townId4CapacityFactorNeedingUpdate = false
-    end,
-    guiUpdateConsumptionFactorValue = function()
-        if type(_state.townId4ConsumptionFactorNeedingUpdate) ~= 'number' then return end
-
-        local textBox = api.gui.util.getById('lolloTownTuning_ConsumptionFactorValue_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
-        if textBox then
-            textBox:setText(tostring(commonData.common.get().consumptionFactor or 'NIL'))
+        resComp:getLayout():addItem(resCheckBox)
+        local comComp = api.gui.comp.Component.new(_('Commercial'))
+        comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+        comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+        local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+        comCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_comCargoType_' .. tostring(cargoId))
+        for _, v in pairs(townData.cargoNeeds[2]) do
+            if v == cargoId then comCheckBox:setSelected(true, false) end
         end
-        _state.townId4ConsumptionFactorNeedingUpdate = false
-    end,
-    guiUpdatePersonCapacityFactorValue = function()
-        if type(_state.townId4PersonCapacityFactorNeedingUpdate) ~= 'number' then return end
-
-        local textBox = api.gui.util.getById('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(_state.townId4PersonCapacityFactorNeedingUpdate))
-        if textBox then
-            textBox:setText(tostring(commonData.common.get().personCapacityFactor or 'NIL'))
+        comComp:getLayout():addItem(comCheckBox)
+        local indComp = api.gui.comp.Component.new(_('Industrial'))
+        indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+        indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+        local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+        indCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_indCargoType_' .. tostring(cargoId))
+        for _, v in pairs(townData.cargoNeeds[3]) do
+            if v == cargoId then indCheckBox:setSelected(true, false) end
         end
-        _state.townId4PersonCapacityFactorNeedingUpdate = false
-    end,
-    replaceBuildingWithSelf = function(oldBuildingId)
-        -- no good, leads to multithreading nightmare
-        print('oldBuildingId =', oldBuildingId or 'NIL')
-        if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
+        indComp:getLayout():addItem(indCheckBox)
+        cargoTypesTable:addRow({
+            resComp,
+            comComp,
+            indComp
+        })
+    end
 
-        local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
-        print('oldBuilding =')
-        debugPrint(oldBuilding)
-        if not(oldBuilding) then return end
-        -- skip buildings that do not accept freight
-        if not(oldBuilding.personCapacity) then return end
-        if type(oldBuilding.stockList) ~= 'number' then return end
-        if oldBuilding.stockList < 0 then return end
-        local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
-        print('oldConstructionId =')
-        debugPrint(oldConstructionId)
-        if type(oldConstructionId) ~= 'number' then return end
-        if oldConstructionId < 0 then return end
+    parentLayout:addItem(cargoTypesTable)
+end
+_utils.guiAddAllTownProps = function(parentLayout, townId, sharedData)
+    local capacityFactorTextViewTitle = api.gui.comp.TextView.new('Capacity Factor')
+    local capacityFactorTextViewDown = api.gui.comp.TextView.new("-")
+    local capacityFactorButtonDown = api.gui.comp.Button.new(capacityFactorTextViewDown, true)
+    capacityFactorButtonDown:setId('lolloTownTuning_CapacityFactorButtonDown_' .. tostring(townId))
+    -- buttonDown:setStyleClassList({ "negative" })
+    local capacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(sharedData.capacityFactor))
+    capacityFactorTextViewValue:setId('lolloTownTuning_CapacityFactorValue_' .. tostring(townId))
+    local capacityFactorTextViewUp = api.gui.comp.TextView.new("+")
+    local capacityFactorButtonUp = api.gui.comp.Button.new(capacityFactorTextViewUp, true)
+    capacityFactorButtonUp:setId('lolloTownTuning_CapacityFactorButtonUp_' .. tostring(townId))
+    -- buttonUp:setStyleClassList({ "positive" })
 
-        local oldConstruction = game.interface.getEntity(oldConstructionId)
-        print('oldConstruction =')
-        debugPrint(oldConstruction)
+    local consumptionFactorTextViewTitle = api.gui.comp.TextView.new('Consumption Factor')
+    local consumptionFactorTextViewDown = api.gui.comp.TextView.new("-")
+    local consumptionFactorButtonDown = api.gui.comp.Button.new(consumptionFactorTextViewDown, true)
+    consumptionFactorButtonDown:setId('lolloTownTuning_ConsumptionFactorButtonDown_' .. tostring(townId))
+    -- buttonDown:setStyleClassList({ "negative" })
+    local consumptionFactorTextViewValue = api.gui.comp.TextView.new(tostring(sharedData.consumptionFactor))
+    consumptionFactorTextViewValue:setId('lolloTownTuning_ConsumptionFactorValue_' .. tostring(townId))
+    local consumptionFactorTextViewUp = api.gui.comp.TextView.new("+")
+    local consumptionFactorButtonUp = api.gui.comp.Button.new(consumptionFactorTextViewUp, true)
+    consumptionFactorButtonUp:setId('lolloTownTuning_ConsumptionFactorButtonUp_' .. tostring(townId))
+    -- buttonUp:setStyleClassList({ "positive" })
 
-        local newId = game.interface.upgradeConstruction(
-            oldConstruction.id,
-            oldConstruction.fileName,
-            -- leadingStation.params -- NO!
-            arrayUtils.cloneOmittingFields(oldConstruction.params, {'seed'})
-        )
-        print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
-    end,
-    triggerUpdate4Town = function(townId)
-        print('type(townId) = ', type(townId))
-        print('townId = ', townId or 'NIL')
-        if type(townId) ~= 'number' or townId < 1 then return end
+    local personCapacityFactorTextViewTitle = api.gui.comp.TextView.new('Person Capacity Factor')
+    local personCapacityFactorTextViewDown = api.gui.comp.TextView.new("-")
+    local personCapacityFactorButtonDown = api.gui.comp.Button.new(personCapacityFactorTextViewDown, true)
+    personCapacityFactorButtonDown:setId('lolloTownTuning_PersonCapacityFactorButtonDown_' .. tostring(townId))
+    -- buttonDown:setStyleClassList({ "negative" })
+    local personCapacityFactorTextViewValue = api.gui.comp.TextView.new(tostring(sharedData.personCapacityFactor))
+    personCapacityFactorTextViewValue:setId('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(townId))
+    local personCapacityFactorTextViewUp = api.gui.comp.TextView.new("+")
+    local personCapacityFactorButtonUp = api.gui.comp.Button.new(personCapacityFactorTextViewUp, true)
+    personCapacityFactorButtonUp:setId('lolloTownTuning_PersonCapacityFactorButtonUp_' .. tostring(townId))
+    -- buttonUp:setStyleClassList({ "positive" })
 
-        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-        if not(townData) then return end
+    parentLayout:addItem(capacityFactorTextViewTitle)
+    local capacityTable = api.gui.comp.Table.new(1, 'NONE')
+    capacityTable:setNumCols(3)
+    capacityTable:addRow({capacityFactorButtonDown, capacityFactorTextViewValue, capacityFactorButtonUp})
+    parentLayout:addItem(capacityTable)
 
-        -- res, com, ind.
-        local oldCargoNeeds = townData.cargoNeeds
-        if not(oldCargoNeeds) then return end
+    parentLayout:addItem(consumptionFactorTextViewTitle)
+    local consumptionTable = api.gui.comp.Table.new(1, 'NONE')
+    consumptionTable:setNumCols(3)
+    consumptionTable:addRow({consumptionFactorButtonDown, consumptionFactorTextViewValue, consumptionFactorButtonUp})
+    parentLayout:addItem(consumptionTable)
 
-        -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-        -- local newCargoNeeds = oldCargoNeeds
-        -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-        --     print(cargoTypeId, cargoSupply)
-        -- end
-        api.cmd.sendCommand(
-            -- this triggers updateFn for all the town buildings
-            api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
-        )
-    end,
-    updateCapacityFactorValue = function(townId)
-        if type(townId) ~= 'number' or townId < 1 then return end
+    parentLayout:addItem(personCapacityFactorTextViewTitle)
+    local personCapacityTable = api.gui.comp.Table.new(1, 'NONE')
+    personCapacityTable:setNumCols(3)
+    personCapacityTable:addRow({personCapacityFactorButtonDown, personCapacityFactorTextViewValue, personCapacityFactorButtonUp})
+    parentLayout:addItem(personCapacityTable)
+end
+_utils.guiAddTuningMenu = function(windowId, townId, sharedData)
+    -- print('town stats window opened, id, name, param, api.gui.util.getById ==')
+    local window = api.gui.util.getById(windowId)
+    window:setResizable(true)
 
-        _state.townId4CapacityFactorNeedingUpdate = townId
-    end,
-    updateConsumptionFactorValue = function(townId)
-        if type(townId) ~= 'number' or townId < 1 then return end
+    local windowContent = window:getContent()
+    local tuningTab = api.gui.comp.Component.new('TUNING')
+    tuningTab:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+    windowContent:insertTab(
+        api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
+        tuningTab,
+        3
+    )
+    local tuningLayout = tuningTab:getLayout()
+    _utils.guiAddAllTownProps(tuningLayout, townId, sharedData)
+    _utils.guiAddOneTownProps(tuningLayout, townId)
 
-        _state.townId4ConsumptionFactorNeedingUpdate = townId
-    end,
-    updatePersonCapacityFactorValue = function(townId)
-        if type(townId) ~= 'number' or townId < 1 then return end
+    local minimumSize = window:calcMinimumSize()
+    local newSize = api.gui.util.Size.new()
+    newSize.h = minimumSize.h + 200
+    newSize.w = minimumSize.w + 100
+    -- window:setMinimumSize(newSize) -- useless
+    window:setSize(newSize) -- flickers if h is too small
+    -- window:setMaximiseSize(newSize.w, newSize.h, 1) -- flickers if h is too small
+end
+_utils.guiUpdateCapacityFactorValue = function()
+    if type(_state.townId4CapacityFactorNeedingUpdate) ~= 'number' then return end
 
-        _state.townId4PersonCapacityFactorNeedingUpdate = townId
-    end,
-}
+    local textBox = api.gui.util.getById('lolloTownTuning_CapacityFactorValue_' .. tostring(_state.townId4CapacityFactorNeedingUpdate))
+    if textBox then
+        textBox:setText(tostring(commonData.shared.get().capacityFactor or 'NIL'))
+    end
+    _state.townId4CapacityFactorNeedingUpdate = false
+end
+_utils.guiUpdateConsumptionFactorValue = function()
+    if type(_state.townId4ConsumptionFactorNeedingUpdate) ~= 'number' then return end
+
+    local textBox = api.gui.util.getById('lolloTownTuning_ConsumptionFactorValue_' .. tostring(_state.townId4ConsumptionFactorNeedingUpdate))
+    if textBox then
+        textBox:setText(tostring(commonData.shared.get().consumptionFactor or 'NIL'))
+    end
+    _state.townId4ConsumptionFactorNeedingUpdate = false
+end
+_utils.guiUpdatePersonCapacityFactorValue = function()
+    if type(_state.townId4PersonCapacityFactorNeedingUpdate) ~= 'number' then return end
+
+    local textBox = api.gui.util.getById('lolloTownTuning_PersonCapacityFactorValue_' .. tostring(_state.townId4PersonCapacityFactorNeedingUpdate))
+    if textBox then
+        textBox:setText(tostring(commonData.shared.get().personCapacityFactor or 'NIL'))
+    end
+    _state.townId4PersonCapacityFactorNeedingUpdate = false
+end
+_utils.replaceBuildingWithSelf = function(oldBuildingId)
+    -- no good, leads to multithreading nightmare
+    print('oldBuildingId =', oldBuildingId or 'NIL')
+    if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
+
+    local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
+    print('oldBuilding =')
+    debugPrint(oldBuilding)
+    if not(oldBuilding) then return end
+    -- skip buildings that do not accept freight
+    if not(oldBuilding.personCapacity) then return end
+    if type(oldBuilding.stockList) ~= 'number' then return end
+    if oldBuilding.stockList < 0 then return end
+    local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
+    print('oldConstructionId =')
+    debugPrint(oldConstructionId)
+    if type(oldConstructionId) ~= 'number' then return end
+    if oldConstructionId < 0 then return end
+
+    local oldConstruction = game.interface.getEntity(oldConstructionId)
+    print('oldConstruction =')
+    debugPrint(oldConstruction)
+
+    local newId = game.interface.upgradeConstruction(
+        oldConstruction.id,
+        oldConstruction.fileName,
+        -- leadingStation.params -- NO!
+        arrayUtils.cloneOmittingFields(oldConstruction.params, {'seed'})
+    )
+    print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
+end
+_utils.triggerUpdate4Town = function(townId)
+    print('type(townId) = ', type(townId))
+    print('townId = ', townId or 'NIL')
+    if type(townId) ~= 'number' or townId < 1 then return end
+
+    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    if not(townData) then return end
+
+    -- res, com, ind.
+    local oldCargoNeeds = townData.cargoNeeds
+    if not(oldCargoNeeds) then return end
+
+    -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+    -- local newCargoNeeds = oldCargoNeeds
+    -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+    --     print(cargoTypeId, cargoSupply)
+    -- end
+    api.cmd.sendCommand(
+        -- this triggers updateFn for all the town buildings
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
+    )
+end
+_utils.updateCapacityFactorValue = function(townId)
+    if type(townId) ~= 'number' or townId < 1 then return end
+
+    _state.townId4CapacityFactorNeedingUpdate = townId
+end
+_utils.updateConsumptionFactorValue = function(townId)
+    if type(townId) ~= 'number' or townId < 1 then return end
+
+    _state.townId4ConsumptionFactorNeedingUpdate = townId
+end
+_utils.updatePersonCapacityFactorValue = function(townId)
+    if type(townId) ~= 'number' or townId < 1 then return end
+
+    _state.townId4PersonCapacityFactorNeedingUpdate = townId
+end
+
 local _actions = {
     alterCapacityFactor = function(isUp)
         print('alterCapacityFactor starting, isCapacityFactorUp =', isUp)
@@ -190,11 +256,11 @@ local _actions = {
         -- for _, buildingId in pairs(buildings) do
         --     _utils.replaceBuildingWithSelf_dumps(buildingId)
         -- end
-print('commonData.common.get() before =')
-debugPrint(commonData.common.get())
-        commonData.common.setCapacityFactor(isUp)
-print('commonData.common.get() after =')
-debugPrint(commonData.common.get())
+print('commonData.shared.get() before =')
+debugPrint(commonData.shared.get())
+        commonData.shared.setCapacityFactor(isUp)
+print('commonData.shared.get() after =')
+debugPrint(commonData.shared.get())
 print('commonData.towns.get() after =')
 debugPrint(commonData.towns.get())
 
@@ -207,7 +273,7 @@ debugPrint(commonData.towns.get())
         print('alterCapacityFactorByTown starting, townId =', townId or 'NIL', 'isCapacityFactorUp =', isCapacityFactorUp or false)
         if type(townId) ~= 'number' or townId < 1 then return end
 
-        commonData.common.setCapacityFactor(isCapacityFactorUp)
+        commonData.shared.setCapacityFactor(isCapacityFactorUp)
 
         local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
         print('#buildings =', #buildings)
@@ -224,11 +290,11 @@ debugPrint(commonData.towns.get())
     end,
     alterConsumptionFactor = function(isUp)
         print('alterConsumptionFactor starting, isConsumptionFactorUp =', isUp)
-print('commonData.common.get() before =')
-debugPrint(commonData.common.get())
-        commonData.common.setConsumptionFactor(isUp)
-print('commonData.common.get() after =')
-debugPrint(commonData.common.get())
+print('commonData.shared.get() before =')
+debugPrint(commonData.shared.get())
+        commonData.shared.setConsumptionFactor(isUp)
+print('commonData.shared.get() after =')
+debugPrint(commonData.shared.get())
 print('commonData.towns.get() after =')
 debugPrint(commonData.towns.get())
 
@@ -238,11 +304,11 @@ debugPrint(commonData.towns.get())
     end,
     alterPersonCapacityFactor = function(isUp)
         print('alterPersonCapacityFactor starting, isPersonCapacityFactorUp =', isUp)
-print('commonData.common.get() before =')
-debugPrint(commonData.common.get())
-        commonData.common.setPersonCapacityFactor(isUp)
-print('commonData.common.get() after =')
-debugPrint(commonData.common.get())
+print('commonData.shared.get() before =')
+debugPrint(commonData.shared.get())
+        commonData.shared.setPersonCapacityFactor(isUp)
+print('commonData.shared.get() after =')
+debugPrint(commonData.shared.get())
 print('commonData.towns.get() after =')
 debugPrint(commonData.towns.get())
 
@@ -302,7 +368,7 @@ function data()
                         if name == 'idAdded' and id:find('temp.view.entity_') then
                             for townId, townData in pairs(commonData.towns.get()) do
                                 if townData.townStatWindowId == id then
-                                    _utils.guiAddTownStatButtons(id, townId, commonData.common.get())
+                                    _utils.guiAddTuningMenu(id, townId, commonData.shared.get())
                                     break
                                 end
                             end
@@ -374,6 +440,10 @@ function data()
                                     }
                                 )
                             end
+                        elseif id:find('lolloTownTuning_') then
+                            print('guiHandleEvent caught event, id =', id, 'name =', name)
+                        -- else
+                        --     print('guiHandleEvent caught event, id =', id, 'name =', name)
                         end
                     end,
                     _myErrorHandler
@@ -387,12 +457,12 @@ function data()
             _utils.guiUpdateConsumptionFactorValue()
             _utils.guiUpdatePersonCapacityFactorValue()
         end,
-        load = function(data)
-            if not(data) then return end
+        load = function(allState)
+            if not(allState) then return end
 
-            _state.townId4CapacityFactorNeedingUpdate = data.townId4CapacityFactorNeedingUpdate or false
-            _state.townId4ConsumptionFactorNeedingUpdate = data.townId4ConsumptionFactorNeedingUpdate or false
-            _state.townId4PersonCapacityFactorNeedingUpdate = data.townId4PersonCapacityFactorNeedingUpdate or false
+            _state.townId4CapacityFactorNeedingUpdate = allState.townId4CapacityFactorNeedingUpdate or false
+            _state.townId4ConsumptionFactorNeedingUpdate = allState.townId4ConsumptionFactorNeedingUpdate or false
+            _state.townId4PersonCapacityFactorNeedingUpdate = allState.townId4PersonCapacityFactorNeedingUpdate or false
         end,
         save = function()
             if not _state then _state = {} end

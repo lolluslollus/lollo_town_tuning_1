@@ -65,7 +65,7 @@ function data()
 -- 		output = { },
 -- 	},
 -- }
-			local common = _commonData.common.get()
+			local common = _commonData.shared.get()
 			-- print('_commonData.common.get() =')
 			-- debugPrint(common)
 			if result.rule then

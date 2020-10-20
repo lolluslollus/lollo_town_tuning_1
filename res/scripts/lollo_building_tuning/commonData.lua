@@ -15,7 +15,22 @@ local _maxConsumptionFactor = 2.4
 local _maxPersonCapacityFactor = 2.0
 
 local helper = {
-    common = {
+    cargoTypes = {
+        getAll = function()
+            local cargoNames = api.res.cargoTypeRep.getAll()
+            if not(cargoNames) then return {} end
+
+            local results = {}
+            for k, v in pairs(cargoNames) do
+                if v ~= 'PASSENGERS' then -- note that passengers has id = 0
+                    results[k] = api.res.cargoTypeRep.get(k)
+                end
+            end
+
+            return results
+        end,
+    },
+    shared = {
         get = function()
             local result = fileUtils.loadTable(_fileName)
             if type(result) ~= 'table' then
