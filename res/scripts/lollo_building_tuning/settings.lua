@@ -1,61 +1,70 @@
 local results = {}
 
-results.townBuildingEraOptions = {
-	BuildingsEraA = {
-		order = 2,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era A Buildings"),
-		description = _("BuildingsEraA"),
-	},
-	BuildingsEraB = {
-		order = 3,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era B Buildings"),
-		description = _("BuildingsEraB"),
-	},
-	BuildingsEraC = {
-		order = 4,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("Era C Buildings"),
-		description = _("BuildingsEraC"),
-	},
-}
-results.townBuildingLevelOptions = {
-	BuildingsLvl2 = {
-		order=2,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("LVL 2 Buildings"),
-		description = _("BuildingsLvl2"),
-	},
-	BuildingsLvl3 = {
-		order=3,
-		type = "boolean",
-		default = true,
-		value = true,
-		name = _("LVL 3 Buildings"),
-		description = _("BuildingsLvl3"),
-	},
-	BuildingsLvl4 = {
-		order=4,
-		type = "boolean",
-		default = false,
-		value = false,
-		name = _("LVL 4 Buildings"),
-		description = _("BuildingsLvl4"),
-	},
+local _values = {
+	townDevelopInterval = 20.0, -- default is 60.0
+	townMajorStreetAngleRange = 10.0, -- default is 0.0
 }
 
--- results.townBuildingDemandFactor = 0.1 -- default would be 1
--- results.townBuildingPersonCapacityFactor = 1.0 -- default would be 1
-results.townDevelopInterval = 20.0 -- was 60.0
-results.townMajorStreetAngleRange = 10.0 -- was 0.0
+local function _getModSettings1()
+    if type(game) ~= 'table' or type(game.config) ~= 'table' then return nil end
+    return game.config._lolloTownTuning
+end
+
+local function _getModSettings2()
+    if type(api) ~= 'table' or type(api.res) ~= 'table' or type(api.res.getBaseConfig) ~= 'table' then return end
+
+    local baseConfig = api.res.getBaseConfig()
+    if not(baseConfig) then return end
+
+    return baseConfig._lolloTownTuning
+end
+
+results.getParam = function(fieldName)
+    local modSettings = _getModSettings1() or _getModSettings2()
+    if not(modSettings) then
+        print('LOLLO town tuning cannot read modSettings')
+        return nil
+    end
+
+    return modSettings[fieldName]
+end
+
+results.getValue = function(fieldName)
+    return _values[fieldName]
+end
+
+results.setModParamsFromRunFn = function(thisModParams)
+    -- LOLLO NOTE if default values are set, modParams in runFn will be an empty table,
+    -- so thisModParams here will be nil
+    if type(game) ~= 'table' or type(game.config) ~= 'table' then return end
+
+    if type(game.config._lolloTownTuning) ~= 'table' then
+        game.config._lolloTownTuning = {}
+    end
+
+    if type(thisModParams) == 'table' and thisModParams.noSkyscrapers == 0 then
+        game.config._lolloTownTuning.noSkyscrapers = 0
+    else
+        game.config._lolloTownTuning.noSkyscrapers = 1
+    end
+
+	if type(thisModParams) == 'table' and thisModParams.noSquareCrossings == 0 then
+        game.config._lolloTownTuning.noSquareCrossings = 0
+    else
+        game.config._lolloTownTuning.noSquareCrossings = 1
+    end
+
+	if type(thisModParams) == 'table' and thisModParams.fasterLowGeometry == 0 then
+        game.config._lolloTownTuning.fasterLowGeometry = 0
+    else
+        game.config._lolloTownTuning.fasterLowGeometry = 1
+    end
+
+	if type(thisModParams) == 'table' and thisModParams.fasterTownDevelopInterval == 0 then
+        game.config._lolloTownTuning.fasterTownDevelopInterval = 0
+    else
+        game.config._lolloTownTuning.fasterTownDevelopInterval = 1
+    end
+end
 
 return results
