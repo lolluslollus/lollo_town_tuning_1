@@ -1,35 +1,12 @@
 function data()
 	local _commonData = require('lollo_building_tuning.commonData')
 	local _mySettings = require('/lollo_building_tuning/settings')
-	local arrayUtils = require('lollo_building_tuning.arrayUtils')
 
 	local function constructionCallback(fileName, data)
 		-- alter properties of all buildings in all towns
 		-- this fires for every instance of a building, but it does not contain instance-specific data,
 		-- such as the building town or location.
 		if not(data) or (data.type ~= "TOWN_BUILDING") or type(data.updateFn) ~= 'function' then return data end
-		-- local originalPreProcessFn = data.preProcessFn
-		-- data.preProcessFn = function(one, two, three)
-		-- 	print('construction.preProcessFn starting for TOWN_BUILDING with filename =', fileName)
-		-- 	if fileName:find('era_b/com_1_1x2_02.con') then
-		-- 		print('data =')
-		-- 		debugPrint(data)
-		-- 		print('one =')
-		-- 		debugPrint(one)
-		-- 		print('two =')
-		-- 		debugPrint(two)
-		-- 		print('three =')
-		-- 		debugPrint(three)
-		-- 	end
-
-		-- 	local result = originalPreProcessFn(one, two, three)
-		-- 	if not(result) then return result end
-
-		-- 	if fileName:find('era_b/com_1_1x2_02.con') then
-		-- 		print('result =')
-		-- 		debugPrint(result)
-		-- 	end
-		-- end
 
 		-- LOLLO TODO do we need this?
 		if type(data.upgradeFn) ~= 'function' then
@@ -43,14 +20,14 @@ function data()
 			if not(result) then return result end
 
 			print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
-			if fileName:find('era_b/com_1_1x2_02.con') then
+--[[ 			if fileName:find('era_b/com_1_1x2_02.con') then
 				print('result =')
 				debugPrint(result)
 				print('data =')
 				debugPrint(data)
 				print('params =')
 				debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
-			end
+			end ]]
 -- local sampleResult = {
 -- 	personCapacity = {
 -- 		capacity = 4,

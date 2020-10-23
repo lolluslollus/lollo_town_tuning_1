@@ -21,23 +21,24 @@ local _areaTypes = {
         text = _('Industrial')
     }
 }
-local _eventId = '__lolloTownTuningEvent__'
-local _eventNames = {
-    changeCapacityFactor = 'changeCapacityFactor',
-    changeConsumptionFactor = 'changeConsumptionFactor',
-    changePersonCapacityFactor = 'changePersonCapacityFactor',
-    changeCargoNeeds = 'changeCargoNeeds',
-}
+-- local _eventId = '__lolloTownTuningEvent__'
+-- local _eventNames = {
+--     changeCapacityFactor = 'changeCapacityFactor',
+--     changeConsumptionFactor = 'changeConsumptionFactor',
+--     changePersonCapacityFactor = 'changePersonCapacityFactor',
+--     changeCargoNeeds = 'changeCargoNeeds',
+-- }
 local _utils = {}
-_utils.guiHandleCheckBoxToggle = function(townId, areaTypeId, cargoTypeId, newValue)
-    print('townId =')
-    debugPrint(townId)
-    print('areaTypeId =')
-    debugPrint(areaTypeId)
-    print('cargoTypeId =')
-    debugPrint(cargoTypeId)
-    print('newValue =')
-    debugPrint(newValue)
+_utils.findIndex = function(tab, fieldValueNonNil)
+    if fieldValueNonNil == nil then return -1 end
+
+    for i = 1, #tab do
+        if tab[i] == fieldValueNonNil then
+            return i
+        end
+    end
+
+    return -1
 end
 _utils.guiAddOneTownProps = function(parentLayout, townId)
     if type(townId) ~= 'number' or townId < 1 then return end
@@ -60,10 +61,12 @@ _utils.guiAddOneTownProps = function(parentLayout, townId)
         resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
         local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        resCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_resCargoType_' .. tostring(cargoTypeId))
+        -- resCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_resCargoType_' .. tostring(cargoTypeId))
         resCheckBox:onToggle(
             function(newValue)
-                _utils.guiHandleCheckBoxToggle(townId, _areaTypes.res.id, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(false)
+                _utils.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(true)
             end
         )
         for _, v in pairs(townData.cargoNeeds[1]) do
@@ -75,10 +78,12 @@ _utils.guiAddOneTownProps = function(parentLayout, townId)
         comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
         local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        comCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_comCargoType_' .. tostring(cargoTypeId))
+        -- comCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_comCargoType_' .. tostring(cargoTypeId))
         comCheckBox:onToggle(
             function(newValue)
-                _utils.guiHandleCheckBoxToggle(townId, _areaTypes.com.id, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(false)
+                _utils.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(true)
             end
         )
         for _, v in pairs(townData.cargoNeeds[2]) do
@@ -90,10 +95,12 @@ _utils.guiAddOneTownProps = function(parentLayout, townId)
         indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
         local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        indCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_indCargoType_' .. tostring(cargoTypeId))
+        -- indCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_indCargoType_' .. tostring(cargoTypeId))
         indCheckBox:onToggle(
             function(newValue)
-                _utils.guiHandleCheckBoxToggle(townId, _areaTypes.ind.id, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(false)
+                _utils.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
+                cargoTypesGuiTable:setEnabled(true)
             end
         )
         for _, v in pairs(townData.cargoNeeds[3]) do
@@ -124,7 +131,7 @@ _utils.guiAddAllTownProps = function(parentLayout, townId)
             capacityToggleButtonGroup:setEnabled(false)
             commonData.shared.setCapacityFactor(newIndexBase0 + 1)
             for townId_, _ in pairs(commonData.towns.get()) do
-                _utils.triggerUpdate4Town(townId_)
+                _utils.triggerUpdateTown(townId_)
             end
             capacityToggleButtonGroup:setEnabled(true)
         end
@@ -149,7 +156,7 @@ _utils.guiAddAllTownProps = function(parentLayout, townId)
             consumptionToggleButtonGroup:setEnabled(false)
             commonData.shared.setConsumptionFactor(newIndexBase0 + 1)
             for townId_, _ in pairs(commonData.towns.get()) do
-                _utils.triggerUpdate4Town(townId_)
+                _utils.triggerUpdateTown(townId_)
             end
             consumptionToggleButtonGroup:setEnabled(true)
         end
@@ -174,7 +181,7 @@ _utils.guiAddAllTownProps = function(parentLayout, townId)
             personCapacityToggleButtonGroup:setEnabled(false)
             commonData.shared.setPersonCapacityFactor(newIndexBase0 + 1)
             for townId_, _ in pairs(commonData.towns.get()) do
-                _utils.triggerUpdate4Town(townId_)
+                _utils.triggerUpdateTown(townId_)
             end
             personCapacityToggleButtonGroup:setEnabled(true)
         end
@@ -214,7 +221,7 @@ _utils.guiAddTuningMenu = function(windowId, townId)
     newSize.w = minimumSize.w + 100
     -- window:setMinimumSize(newSize) -- useless
     window:setSize(newSize) -- flickers if h is too small
-    -- window:setMaximiseSize(newSize.w, newSize.h, 1) -- flickers if h is too small
+    -- window:setMaximiseSize(newSize.w, newSize.h, 1) -- flickers if h is too small, could be useful tho
 end
 _utils.replaceBuildingWithSelf = function(oldBuildingId)
     -- no good, leads to multithreading nightmare
@@ -247,17 +254,15 @@ _utils.replaceBuildingWithSelf = function(oldBuildingId)
     )
     print('construction', oldConstructionId, 'upgraded to', newId or 'NIL')
 end
-_utils.triggerUpdate4Town = function(townId)
-    print('type(townId) = ', type(townId))
-    print('townId = ', townId or 'NIL')
+_utils.triggerUpdateTown = function(townId)
     if type(townId) ~= 'number' or townId < 1 then return end
 
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
     if not(townData) then return end
 
-    -- res, com, ind.
-    local oldCargoNeeds = townData.cargoNeeds
-    if not(oldCargoNeeds) then return end
+    -- res, com, ind
+    local cargoNeeds = townData.cargoNeeds
+    if not(cargoNeeds) then return end
 
     -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
     -- local newCargoNeeds = oldCargoNeeds
@@ -266,37 +271,35 @@ _utils.triggerUpdate4Town = function(townId)
     -- end
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
-        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, oldCargoNeeds)
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
     )
 end
+_utils.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
+    if type(townId) ~= 'number' or townId < 1 then return end
 
-local _actions = {
-    alterCapacityFactorByTown = function(townId, isCapacityFactorUp)
-        -- no good, call in a loop and you are in for a multithreading disaster
-        print('alterCapacityFactorByTown starting, townId =', townId or 'NIL', 'isCapacityFactorUp =', isCapacityFactorUp or false)
-        if type(townId) ~= 'number' or townId < 1 then return end
+    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    if not(townData) then return end
 
-        commonData.shared.setCapacityFactor(isCapacityFactorUp)
+    -- res, com, ind
+    local cargoNeeds = townData.cargoNeeds
+    if not(cargoNeeds) then return end
 
-        local buildings = api.engine.system.townBuildingSystem.getTown2BuildingMap()[townId]
-        print('#buildings =', #buildings)
-        debugPrint(buildings)
-        local i = 0
-        for _, buildingId in pairs(buildings) do
-            i = i + 1
-            print('about to replace building no', i, 'with buildingId =')
-            debugPrint(buildingId)
-            _utils.replaceBuildingWithSelf(buildingId)
-            print('building no', i, 'processed')
+    if newValue then
+        if not(arrayUtils.arrayHasValue(cargoNeeds[areaTypeIndex], cargoTypeId)) then
+            cargoNeeds[areaTypeIndex][#cargoNeeds[areaTypeIndex] + 1] = cargoTypeId
         end
-        print('alterCapacityFactorByTown ending')
-    end,
-    alterTownRequirements = function(townId, consumptionFactorDelta)
-        -- LOLLO TODO implement this and its UI
-        print('alterTownRequirements starting, townId =', townId, 'consumptionFactorDelta =', consumptionFactorDelta)
-        _utils.triggerUpdate4Town(townId)
-    end,
-}
+    else
+        local index = _utils.findIndex(cargoNeeds[areaTypeIndex], cargoTypeId)
+        if index > -1 then
+            cargoNeeds[areaTypeIndex][index] = nil
+        end
+    end
+
+    api.cmd.sendCommand(
+        -- this triggers updateFn for all the town buildings
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
+    )
+end
 
 function data()
     return {
