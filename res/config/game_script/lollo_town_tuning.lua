@@ -1,27 +1,41 @@
 local arrayUtils = require('lollo_building_tuning.arrayUtils')
+local commonData = require('lollo_building_tuning.commonData')
 
 local function _myErrorHandler(err)
     print('lollo town tuning caught error: ', err)
 end
 
-local _defaultCapacityFactor = 1.0
-local _defaultConsumptionFactor = 1.2
-local _defaultPersonCapacityFactor = 1.0
+local _areaTypes = {
+    res = {
+        id = 'res',
+        index = 1,
+        text = _('Residential')
+    },
+    com = {
+        id = 'com',
+        index = 2,
+        text = _('Commercial')
+    },
+    ind = {
+        id = 'ind',
+        index = 3,
+        text = _('Industrial')
+    }
+}
+
+local _defaultCapacityFactor = commonData.defaultCapacityFactor
+local _defaultConsumptionFactor = commonData.defaultConsumptionFactor
+local _defaultPersonCapacityFactor = commonData.defaultPersonCapacityFactor
 
 local _eventId = '__lolloTownTuningEvent__'
 local _eventNames = {
-    changeCapacityFactor = 'changeCapacityFactor',
-    changeConsumptionFactor = 'changeConsumptionFactor',
-    changePersonCapacityFactor = 'changePersonCapacityFactor',
-    changeCargoNeeds = 'changeCargoNeeds',
+    -- changeCapacityFactor = 'changeCapacityFactor',
+    -- changeConsumptionFactor = 'changeConsumptionFactor',
+    -- changePersonCapacityFactor = 'changePersonCapacityFactor',
+    -- changeCargoNeeds = 'changeCargoNeeds',
     updateState = 'updateState',
 }
 
--- local state = {
---     capacityFactor = _defaultCapacityFactor,
---     consumptionFactor = _defaultConsumptionFactor,
---     personCapacityFactor = _defaultPersonCapacityFactor
--- }
 local state = nil
 
 local _dataHelper = { }
@@ -205,23 +219,6 @@ _dataHelper.towns = {
     end,
 }
 
-local _areaTypes = {
-    res = {
-        id = 'res',
-        index = 1,
-        text = _('Residential')
-    },
-    com = {
-        id = 'com',
-        index = 2,
-        text = _('Commercial')
-    },
-    ind = {
-        id = 'ind',
-        index = 3,
-        text = _('Industrial')
-    }
-}
 local _utils = {
     findIndex = function(tab, fieldValueNonNil)
         if fieldValueNonNil == nil then return -1 end
@@ -514,11 +511,12 @@ function data()
         handleEvent = function(src, id, name, params)
             if id == _eventId then
                 if name == _eventNames.updateState then
-                    state = params
+                    state = params -- LOLLO NOTE you can only update the state from the worker thread
                 end
             end
         end,
         save = function()
+            -- only fires when the worker thread changes the state
             if not state then state = {} end
             if not state.capacityFactor then state.capacityFactor = _defaultCapacityFactor end
             if not state.consumptionFactor then state.consumptionFactor = _defaultConsumptionFactor end
@@ -526,6 +524,7 @@ function data()
             return state
         end,
         load = function(loadedState)
+            -- fires once in the worker thread, at game load, and many times in the UI thread
             if loadedState then
                 state = {}
                 state.capacityFactor = loadedState.capacityFactor or _defaultCapacityFactor
@@ -538,7 +537,7 @@ function data()
                     personCapacityFactor = _defaultPersonCapacityFactor
                 }
             end
+            commonData.set(state)
         end,
     }
 end
-

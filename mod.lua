@@ -43,8 +43,7 @@ function data()
 				debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
 			end ]]
 
-			-- LOLLO TODO load this from the game script
-			local common = commonData.shared.get()
+			local common = commonData.get()
 			-- print('_commonData.common.get() =')
 			-- debugPrint(common)
 			if result.rule then
