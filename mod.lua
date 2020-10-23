@@ -43,6 +43,7 @@ function data()
 				debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
 			end ]]
 
+			-- LOLLO TODO load this from the game script
 			local common = commonData.shared.get()
 			-- print('_commonData.common.get() =')
 			-- debugPrint(common)
@@ -176,8 +177,8 @@ function data()
 				end
 			end
 
-			print('LOLLO game.config.townDevelopInterval = ', game.config.townDevelopInterval)
-			print('LOLLO game.config.townMajorStreetAngleRange = ', game.config.townMajorStreetAngleRange)
+			-- print('LOLLO game.config.townDevelopInterval = ', game.config.townDevelopInterval)
+			-- print('LOLLO game.config.townMajorStreetAngleRange = ', game.config.townMajorStreetAngleRange)
 		end,
 	}
 end

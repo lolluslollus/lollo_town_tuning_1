@@ -1,7 +1,7 @@
 local fileUtils = require('lollo_building_tuning.fileUtils')
 local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 -- print('current dir =', _currentDir)
--- LOLLO TODO save this in the game and not in a separate file
+
 local _fileName = _currentDir .. '/commonDataTemp.lua'
 -- print('file name =', _fileName)
 
