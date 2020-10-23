@@ -48,6 +48,7 @@ function data()
 			if result.rule then
 				-- LOLLO TODO this needs testing: does the consumption factor really change things?
 				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
+				-- So, capacity etc changes will affect all towns.
 				-- print('result.rule.capacity before =', result.rule.capacity)
 				-- print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
 				result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
@@ -161,23 +162,13 @@ function data()
 					name = "Lollus",
 					role = 'CREATOR',
 				},
-				{
-					name = "Sparky",
-					role = 'CREATOR',
-				},
-				{
-					name = "VacuumTube",
-					role = "CREATOR",
-				},
 			},
 		},
 		runFn = function (settings)
-			-- local mySettings = require('/lollo_building_tuning/settings')
-
 			addFileFilter("construction", filterLevels(_mySettings.townBuildingLevelOptions))
 			addFileFilter("construction", filterEras(_mySettings.townBuildingEraOptions))
 			addModifier("loadConstruction", constructionCallback)
-			-- does nothing
+			-- useless
 			-- addModifier("loadConstructionMenu", constructionMenuCallback)
 			-- addModifier('loadScript', loadScriptCallback)
 			-- addModifier('loadGameScript', loadGameScriptCallback)
@@ -185,7 +176,7 @@ function data()
 			game.config.townDevelopInterval = _mySettings.townDevelopInterval
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
-			if game.config.settings then
+			if game.config and game.config.settings then
 				game.config.settings.geometryQualityOptions = {
 					-- { viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { .45, 1.0 }, lodDistanceScaling = .5 },		-- Low original
 					{ viewNearFar = { 4.0, 4000.0 }, fogStartEndFarPerc = { .45, 1.0 }, lodDistanceScaling = .25 },		-- Low
