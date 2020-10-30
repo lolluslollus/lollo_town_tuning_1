@@ -1,5 +1,5 @@
-local arrayUtils = require('lollo_building_tuning.arrayUtils')
-local commonData = require('lollo_building_tuning.commonData')
+local arrayUtils = require('lollo_town_tuning.arrayUtils')
+local commonData = require('lollo_town_tuning.commonData')
 
 local function _myErrorHandler(err)
     print('lollo town tuning caught error: ', err)

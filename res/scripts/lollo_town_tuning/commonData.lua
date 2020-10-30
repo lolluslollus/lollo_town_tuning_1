@@ -3,7 +3,7 @@
 -- Whenever a game loads or the user changes some data, the temp file is updated.
 -- Whenever construction.TOWN_BUILDING.updateFn fires, it will read ther latest version of it.
 
-local fileUtils = require('lollo_building_tuning.fileUtils')
+local fileUtils = require('lollo_town_tuning.fileUtils')
 local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 -- print('current dir =', _currentDir)
 local _fileName = _currentDir .. '/commonDataTemp.lua'

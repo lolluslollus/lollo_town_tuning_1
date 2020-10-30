@@ -1,6 +1,6 @@
 function data()
-	local commonData = require('lollo_building_tuning.commonData')
-	local modSettings = require('/lollo_building_tuning/settings')
+	local commonData = require('lollo_town_tuning.commonData')
+	local modSettings = require('/lollo_town_tuning/settings')
 
 	local function loadConstructionFunc(fileName, data)
 		-- alter properties of all buildings in all towns
