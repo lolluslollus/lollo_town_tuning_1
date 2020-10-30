@@ -8,7 +8,10 @@ return {
 		If you want more, you can reduce people requirements in every building.
 		You can also do the opposite and increase the parameters, if you have a NASA computer or a very small game.
 
-        As a bonus, you get switches to avoid new skyscrapers, build new roads with non-square corners or limit the geometry settings.
+		As a bonus, you get switches to:
+		 avoid new skyscrapers, 
+		 build new roads with non-square corners,
+		 limit the geometry settings to increase performance.
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
 		NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done.]],
