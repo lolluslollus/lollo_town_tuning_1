@@ -1,7 +1,7 @@
 -- LOLLO BODGE we need this to exchange data between runFn(CONSTRUCTION) and the game script.
 -- at the moment, we have no way of reading up-to-date game script data from a runFn.
 -- Whenever a game loads or the user changes some data, the temp file is updated.
--- Whenever construction.TOWN_BUILDING.updateFn fires, it will read ther latest version of it.
+-- Whenever construction.TOWN_BUILDING.updateFn fires, it will read their latest version of it.
 
 local fileUtils = require('lollo_town_tuning.fileUtils')
 local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
@@ -27,9 +27,6 @@ helper.get = function()
     return result
 end
 helper.set = function(data)
-    -- print('type(data) =', type(data))
-    -- print('data =')
-    -- debugPrint(data)
     if type(data) ~= 'table' then return end
 
     local savedData = fileUtils.loadTable(_fileName)
