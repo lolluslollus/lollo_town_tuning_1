@@ -3,15 +3,17 @@ return {
 	en = {
 		NAME = "Town tuning",
 		DESC = [[Control town building requirements and capacities.
-		This mod adds a \"tuning\" tab to the town menus, where you can alter some parameters in new and old games.
-		If your game has grown and ground to a halt, you can reduce the industrial and commercial requirements across all towns.
+		This mod adds a "tuning" tab to the town menus, where you can alter some parameters in new and old games.
+		If your game has grown and ground to a halt, you can reduce the industrial and commercial consumption across all towns.
+		If that does not do it, you can reduce the industrial and commercial requirements across all towns.
 		If you want more, you can reduce people requirements in every building.
 		You can also do the opposite and increase the parameters, if you have a NASA computer or a very small game.
 
 		As a bonus, you get switches to:
-		 avoid new skyscrapers, 
-		 build new roads with non-square corners,
-		 limit the geometry settings to increase performance.
+		- avoid new skyscrapers, 
+		- build new roads with non-square corners,
+		- limit the geometry settings to increase performance.
+		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
 		NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done.]],

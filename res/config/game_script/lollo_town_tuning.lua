@@ -231,6 +231,21 @@ local _utils = {
 
         return -1
     end,
+    getCargoNeeds = function(townId)
+        if type(townId) ~= 'number' or townId < 1 then return nil end
+
+        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+        if not(townData) then return nil end
+
+        -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+        -- local newCargoNeeds = oldCargoNeeds
+        -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+        --     print(cargoTypeId, cargoSupply)
+        -- end
+
+        -- res, com, ind
+        return townData.cargoNeeds
+    end
 }
 local _actions = {}
 _actions.guiAddOneTownProps = function(parentLayout, townId)
@@ -252,7 +267,6 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
         local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        -- resCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_resCargoType_' .. tostring(cargoTypeId))
         resCheckBox:onToggle(
             function(newValue)
                 cargoTypesGuiTable:setEnabled(false)
@@ -269,7 +283,6 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
         local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        -- comCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_comCargoType_' .. tostring(cargoTypeId))
         comCheckBox:onToggle(
             function(newValue)
                 cargoTypesGuiTable:setEnabled(false)
@@ -286,7 +299,6 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
         indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
         local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        -- indCheckBox:setId('lolloTownTuning_town_' .. tostring(townId) .. '_indCargoType_' .. tostring(cargoTypeId))
         indCheckBox:onToggle(
             function(newValue)
                 cargoTypesGuiTable:setEnabled(false)
@@ -414,7 +426,7 @@ _actions.guiAddTuningMenu = function(windowId, townId)
     -- window:setMaximiseSize(newSize.w, newSize.h, 1) -- flickers if h is too small, could be useful tho
 end
 _actions.replaceBuildingWithSelf = function(oldBuildingId)
-    -- no good, leads to multithreading nightmare
+    -- no good, must be called in a loop and leads to multithreading nightmare
     if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
 
     local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
@@ -437,33 +449,16 @@ _actions.replaceBuildingWithSelf = function(oldBuildingId)
     )
 end
 _actions.triggerUpdateTown = function(townId)
-    if type(townId) ~= 'number' or townId < 1 then return end
-
-    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-    if not(townData) then return end
-
-    -- res, com, ind
-    local cargoNeeds = townData.cargoNeeds
+    local cargoNeeds = _utils.getCargoNeeds(townId)
     if not(cargoNeeds) then return end
 
-    -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-    -- local newCargoNeeds = oldCargoNeeds
-    -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-    --     print(cargoTypeId, cargoSupply)
-    -- end
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
         api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
     )
 end
 _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
-    if type(townId) ~= 'number' or townId < 1 then return end
-
-    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-    if not(townData) then return end
-
-    -- res, com, ind
-    local cargoNeeds = townData.cargoNeeds
+    local cargoNeeds = _utils.getCargoNeeds(townId)
     if not(cargoNeeds) then return end
 
     if newValue then
