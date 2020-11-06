@@ -504,6 +504,8 @@ function data()
             end
         end,
         handleEvent = function(src, id, name, params)
+            -- if src == 'guidesystem.lua' then return end
+            -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
             if id == _eventId then
                 if name == _eventNames.updateState then
                     state = params -- LOLLO NOTE you can only update the state from the worker thread
