@@ -16,7 +16,16 @@ return {
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-		NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done.]],
+        NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done.
+        
+        PERFORMANCE TIPS:
+        I have a test game with over 50K people and mods to 16-fold industry output. All these tricks improve performance on my machine (ROG Stryx + Ryzen 3900X + NVIDIA RTX2600S + 64GB 3200 MHz + EVO SSD):
+        - Leave this mod's switches on their default values
+        - In the game options, set geometry to low
+        - In the game options, set texture quality to high or less
+        - Use one screen instead of two
+        - Limit the frame rate with the Nvidia control panel.
+        ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor, affects all towns",
 		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor, affects all towns",
 		FASTER_LOW_GEOMETRY = "Faster low geometry setting",
