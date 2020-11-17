@@ -16,7 +16,7 @@ return {
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-        NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done.
+        NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future.
         
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold industry output. All these tricks improve performance on my machine (ROG Stryx + Ryzen 3900X + NVIDIA RTX2600S + 64GB 3200 MHz + EVO SSD):
