@@ -19,7 +19,7 @@ return {
         NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future.
         
         PERFORMANCE TIPS:
-        I have a test game with over 50K people and mods to 16-fold industry output. All these tricks improve performance on my machine (ROG Stryx + Ryzen 3900X + NVIDIA RTX2600S + 64GB 3200 MHz + EVO SSD):
+        I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
         - Leave this mod's switches on their default values
         - In the game options, set geometry to low
         - In the game options, set texture quality to high or less
