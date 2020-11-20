@@ -24,7 +24,8 @@ return {
         - In the game options, set geometry to low
         - In the game options, set texture quality to high or less
         - Use one screen instead of two
-        - Limit the frame rate with the Nvidia control panel.
+		- Limit the frame rate with the Nvidia control panel.
+		- Switch off triple image buffering in the nvidia control panel
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor, affects all towns",
 		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor, affects all towns",
