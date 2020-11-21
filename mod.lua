@@ -18,6 +18,8 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 
+			local _testBuildingFileNameSegment = 'era_b/com_1_4x4_04.con'
+
 			-- local sampleResult = {
 			-- 	personCapacity = {
 			-- 		capacity = 4,
@@ -34,7 +36,8 @@ function data()
 			-- }
 
 			-- print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
---[[ 			if fileName:find('era_b/com_1_1x2_02.con') then
+--[[ 			-- if fileName:find('era_b/com_1_1x2_02.con') then
+				if fileName:find(_testBuildingFileNameSegment) then
 				print('result =')
 				debugPrint(result)
 				print('data =')
@@ -44,8 +47,10 @@ function data()
 			end ]]
 
 			local common = commonData.get()
-			-- print('_commonData.common.get() =')
-			-- debugPrint(common)
+			if fileName:find(_testBuildingFileNameSegment) then
+				print('_commonData.common.get() =')
+				debugPrint(common)
+			end
 			if result.rule then
 				-- LOLLO TODO this needs testing: does the consumption factor really change things?
 				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
@@ -58,9 +63,16 @@ function data()
 				-- print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
-				-- print('result.personCapacity.capacity before =', result.personCapacity.capacity)
+				if fileName:find(_testBuildingFileNameSegment) then
+					print('result.personCapacity.capacity before =', result.personCapacity.capacity)
+				end
 				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * (common.personCapacityFactor or 1.0))
-				-- print('result.personCapacity.capacity after =', result.personCapacity.capacity)
+				if fileName:find(_testBuildingFileNameSegment) then
+					print('params.capacity =', params.capacity)
+				end
+				if fileName:find(_testBuildingFileNameSegment) then
+					print('result.personCapacity.capacity after =', result.personCapacity.capacity)
+				end
 			end
 
 			return result

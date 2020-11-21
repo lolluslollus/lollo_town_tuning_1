@@ -58,6 +58,7 @@ _dataHelper.shared = {
     get = function()
         local result = arrayUtils.cloneOmittingFields(state)
         if type(result) ~= 'table' then
+            print('sharedData found no state, returning defaults')
             result = {
                 capacityFactor = _defaultCapacityFactor,
                 consumptionFactor = _defaultConsumptionFactor,
@@ -83,7 +84,7 @@ _dataHelper.shared = {
         return result
     end,
     setCapacityFactor = function(index)
-        if type(index) ~= 'number' then return end
+        if type(index) ~= 'number' then return false end
 
         local newCommon = arrayUtils.cloneOmittingFields(state)
         if type(newCommon.capacityFactor) ~= 'number' then
@@ -101,7 +102,7 @@ _dataHelper.shared = {
             newFactor = 2.0
         end
 
-        if newFactor == newCommon.capacityFactor then return end
+        if newFactor == newCommon.capacityFactor then return false end
 
         newCommon.capacityFactor = newFactor
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
@@ -110,6 +111,8 @@ _dataHelper.shared = {
             _eventNames.updateState,
             arrayUtils.cloneOmittingFields(newCommon)
         ))
+
+        return true
     end,
     getConsumptionFactorIndex = function(factor)
         if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
@@ -128,11 +131,12 @@ _dataHelper.shared = {
         return result
     end,
     setConsumptionFactor = function(index)
-        if type(index) ~= 'number' then return end
+        if type(index) ~= 'number' then return false end
 
         local newCommon = arrayUtils.cloneOmittingFields(state)
         if type(newCommon.consumptionFactor) ~= 'number' then
-            newCommon.consumptionFactor = _defaultConsumptionFactor end
+            newCommon.consumptionFactor = _defaultConsumptionFactor
+        end
 
         local newFactor = _defaultConsumptionFactor
         if index <= 1 then
@@ -145,7 +149,7 @@ _dataHelper.shared = {
             newFactor = 2.4
         end
 
-        if newFactor == newCommon.consumptionFactor then return end
+        if newFactor == newCommon.consumptionFactor then return false end
 
         newCommon.consumptionFactor = newFactor
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
@@ -154,6 +158,8 @@ _dataHelper.shared = {
             _eventNames.updateState,
             arrayUtils.cloneOmittingFields(newCommon)
         ))
+
+        return true
     end,
     getPersonCapacityFactorIndex = function(factor)
         if type(factor) ~= 'number' then
@@ -174,7 +180,7 @@ _dataHelper.shared = {
         return result
     end,
     setPersonCapacityFactor = function(index)
-        if type(index) ~= 'number' then return end
+        if type(index) ~= 'number' then return false end
 
         local newCommon = arrayUtils.cloneOmittingFields(state)
         if type(newCommon.personCapacityFactor) ~= 'number' then
@@ -192,7 +198,7 @@ _dataHelper.shared = {
             newFactor = 2.0
         end
 
-        if newFactor == newCommon.personCapacityFactor then return end
+        if newFactor == newCommon.personCapacityFactor then return false end
 
         newCommon.personCapacityFactor = newFactor
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
@@ -201,6 +207,8 @@ _dataHelper.shared = {
             _eventNames.updateState,
             arrayUtils.cloneOmittingFields(newCommon)
         ))
+
+        return true
     end,
 }
 _dataHelper.towns = {
@@ -331,12 +339,7 @@ _actions.guiAddAllTownProps = function(parentLayout, townId)
     capacityToggleButtonGroup:setEmitSignal(false)
     capacityToggleButtonGroup:onCurrentIndexChanged(
         function(newIndexBase0)
-            capacityToggleButtonGroup:setEnabled(false)
             _dataHelper.shared.setCapacityFactor(newIndexBase0 + 1)
-            for townId_, _ in pairs(_dataHelper.towns.get()) do
-                _actions.triggerUpdateTown(townId_)
-            end
-            capacityToggleButtonGroup:setEnabled(true)
         end
     )
     for i = 1, #capacityToggleButtons do
@@ -356,12 +359,7 @@ _actions.guiAddAllTownProps = function(parentLayout, townId)
     consumptionToggleButtonGroup:setEmitSignal(false)
     consumptionToggleButtonGroup:onCurrentIndexChanged(
         function(newIndexBase0)
-            consumptionToggleButtonGroup:setEnabled(false)
             _dataHelper.shared.setConsumptionFactor(newIndexBase0 + 1)
-            for townId_, _ in pairs(_dataHelper.towns.get()) do
-                _actions.triggerUpdateTown(townId_)
-            end
-            consumptionToggleButtonGroup:setEnabled(true)
         end
     )
     for i = 1, #consumptionToggleButtons do
@@ -381,12 +379,7 @@ _actions.guiAddAllTownProps = function(parentLayout, townId)
     personCapacityToggleButtonGroup:setEmitSignal(false)
     personCapacityToggleButtonGroup:onCurrentIndexChanged(
         function(newIndexBase0)
-            personCapacityToggleButtonGroup:setEnabled(false)
             _dataHelper.shared.setPersonCapacityFactor(newIndexBase0 + 1)
-            for townId_, _ in pairs(_dataHelper.towns.get()) do
-                _actions.triggerUpdateTown(townId_)
-            end
-            personCapacityToggleButtonGroup:setEnabled(true)
         end
     )
     for i = 1, #personCapacityToggleButtons do
@@ -503,17 +496,31 @@ function data()
             )
             end
         end,
+        -- guiUpdate = function()
+        -- end,
         handleEvent = function(src, id, name, params)
             -- if src == 'guidesystem.lua' then return end
             -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
             if id == _eventId then
                 if name == _eventNames.updateState then
-                    state = params -- LOLLO NOTE you can only update the state from the worker thread
+                    commonData.set(params) -- do this now, the other thread might take too long
+                    state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
+                    print('state updated, new state =')
+                    debugPrint(state)
+
+                    for townId_, _ in pairs(_dataHelper.towns.get()) do
+                        _actions.triggerUpdateTown(townId_)
+                    end
                 end
             end
         end,
+        -- update = function()
+        --     -- fires regularly in the worker thread
+        --     print('script.update')
+        -- end,
         save = function()
-            -- only fires when the worker thread changes the state
+            -- fires when the worker thread changes the state
+            -- print('script.save')
             if not state then state = {} end
             if not state.capacityFactor then state.capacityFactor = _defaultCapacityFactor end
             if not state.consumptionFactor then state.consumptionFactor = _defaultConsumptionFactor end
@@ -522,16 +529,19 @@ function data()
         end,
         load = function(loadedState)
             -- fires once in the worker thread, at game load, and many times in the UI thread
+            -- print('script.load')
             if loadedState then
+                -- print('one')
                 state = {}
                 state.capacityFactor = loadedState.capacityFactor or _defaultCapacityFactor
                 state.consumptionFactor = loadedState.consumptionFactor or _defaultConsumptionFactor
                 state.personCapacityFactor = loadedState.personCapacityFactor or _defaultPersonCapacityFactor
             else
+                print('two')
                 state = {
                     capacityFactor = _defaultCapacityFactor,
                     consumptionFactor = _defaultConsumptionFactor,
-                    personCapacityFactor = _defaultPersonCapacityFactor
+                    personCapacityFactor = _defaultPersonCapacityFactor,
                 }
             end
             commonData.set(state)
