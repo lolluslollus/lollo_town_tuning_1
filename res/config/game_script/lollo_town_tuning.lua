@@ -58,7 +58,7 @@ _dataHelper.shared = {
     get = function()
         local result = arrayUtils.cloneOmittingFields(state)
         if type(result) ~= 'table' then
-            print('sharedData found no state, returning defaults')
+            -- print('sharedData found no state, returning defaults')
             result = {
                 capacityFactor = _defaultCapacityFactor,
                 consumptionFactor = _defaultConsumptionFactor,
@@ -324,7 +324,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
 
     parentLayout:addItem(cargoTypesGuiTable)
 end
-_actions.guiAddAllTownProps = function(parentLayout, townId)
+_actions.guiAddAllTownProps = function(parentLayout)
     local sharedData = _dataHelper.shared.get()
 
     local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
@@ -407,7 +407,7 @@ _actions.guiAddTuningMenu = function(windowId, townId)
         3
     )
     local tuningLayout = tuningTab:getLayout()
-    _actions.guiAddAllTownProps(tuningLayout, townId)
+    _actions.guiAddAllTownProps(tuningLayout)
     _actions.guiAddOneTownProps(tuningLayout, townId)
 
     local minimumSize = window:calcMinimumSize()
@@ -505,8 +505,8 @@ function data()
                 if name == _eventNames.updateState then
                     commonData.set(params) -- do this now, the other thread might take too long
                     state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
-                    print('state updated, new state =')
-                    debugPrint(state)
+                    -- print('state updated, new state =')
+                    -- debugPrint(state)
 
                     for townId_, _ in pairs(_dataHelper.towns.get()) do
                         _actions.triggerUpdateTown(townId_)
@@ -537,7 +537,7 @@ function data()
                 state.consumptionFactor = loadedState.consumptionFactor or _defaultConsumptionFactor
                 state.personCapacityFactor = loadedState.personCapacityFactor or _defaultPersonCapacityFactor
             else
-                print('two')
+                -- print('two')
                 state = {
                     capacityFactor = _defaultCapacityFactor,
                     consumptionFactor = _defaultConsumptionFactor,

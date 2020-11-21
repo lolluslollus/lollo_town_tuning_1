@@ -22,7 +22,7 @@ helper.get = function()
             consumptionFactor = helper.defaultConsumptionFactor,
             personCapacityFactor = helper.defaultPersonCapacityFactor
         }
-        print('no table found, returning defaults')
+        -- print('no table found, returning defaults')
         -- fileUtils.saveTable(result, _fileName)
     end
     -- print('returning data =')
@@ -37,8 +37,8 @@ helper.set = function(data)
     or savedData.capacityFactor ~= data.capacityFactor
     or savedData.consumptionFactor ~= data.consumptionFactor
     or savedData.personCapacityFactor ~= data.personCapacityFactor then
-        print('saving table, data =')
-        debugPrint(data)
+        -- print('saving table, data =')
+        -- debugPrint(data)
         fileUtils.saveTable(data, _fileName)
     end
 end
