@@ -16,7 +16,8 @@ return {
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-        NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future.
+		NOTE 1: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future.
+		NOTE 2: There has been a bugfix. As a one-off, set the industrial and commercial consumption to get the right values again. Wait. Set it to your desired value. Wait. Done.
         
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
