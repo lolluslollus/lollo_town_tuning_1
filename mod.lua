@@ -117,7 +117,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 2,
+			minorVersion = 3,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('NAME'),
@@ -159,7 +159,7 @@ function data()
 		runFn = function (settings, modParams)
 			modSettings.setModParamsFromRunFn(modParams[getCurrentModId()])
 
-			if modSettings.getParam('noSkyscrapers') then
+			if modSettings.getParam('noSkyscrapers') == 1 then
 				addFileFilter('construction', filterOutSkyscrapersFunc)
 			end
 			addModifier('loadConstruction', loadConstructionFunc)
@@ -167,15 +167,15 @@ function data()
 			-- addModifier('loadConstructionMenu', loadConstructionMenuFunc)
 			-- addModifier('loadScript', loadScriptFunc)
 			-- addModifier('loadGameScript', loadGameScriptFunc)
-			if modSettings.getParam('noSquareCrossings') then
+			if modSettings.getParam('noSquareCrossings') == 1 then
 				game.config.townMajorStreetAngleRange = modSettings.getValue('townMajorStreetAngleRange')
 			end
-			if modSettings.getParam('fasterTownDevelopInterval') then
+			if modSettings.getParam('fasterTownDevelopInterval') == 1 then
 				game.config.townDevelopInterval = modSettings.getValue('townDevelopInterval')
 			end
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
-			if modSettings.getParam('fasterLowGeometry') then
+			if modSettings.getParam('fasterLowGeometry') == 1 then
 				if game.config and game.config.settings then
 					game.config.settings.geometryQualityOptions = {
 						-- { viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.5 },		-- Low original
