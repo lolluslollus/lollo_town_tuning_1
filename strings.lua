@@ -5,7 +5,7 @@ return {
 		DESC = [[Control town building requirements and capacities.
 		This mod adds a "tuning" tab to the town menus, where you can alter some parameters in new and old games.
 		If your game has grown and ground to a halt, you can reduce the industrial and commercial consumption across all towns.
-		If that does not do it, you can reduce the industrial and commercial requirements across all towns.
+		If that does not do it, you can alter the industrial and commercial consumption factor (ie supply effectiveness) across all towns.
 		If you want more, you can reduce people requirements in every building.
 		You can also do the opposite and increase the parameters, if you have a NASA computer or a very small game.
 
