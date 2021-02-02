@@ -27,7 +27,7 @@ return {
 		- Limit the frame rate with the Nvidia control panel.
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor, affects all towns",
-		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor, affects all towns",
+		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns",
 		FASTER_LOW_GEOMETRY = "Faster low geometry setting",
 		FASTER_TOWN_DEVELOP_INTERVAL = "Faster town develop interval",
 		NO_SKYSCRAPERS = "Bar commercial and residential skyscrapers (only applies to new buildings)",
