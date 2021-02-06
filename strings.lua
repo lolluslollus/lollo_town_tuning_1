@@ -20,11 +20,14 @@ return {
         
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
-        - Leave this mod's switches on their default values
+        - Cut industry production to reasonable levels, no more 6400 units of coal
+        - Cut the industrial and commercial consumption with this mod
+        - Raise the supply effectiveness with this mod
+        - Mod the steel mill to require 1 coal and 1 ore instead of 2 (not included here)
         - In the game options, set geometry to low
         - In the game options, set texture quality to high or less
         - Use one screen instead of two
-		- Limit the frame rate with the Nvidia control panel.
+    	- Limit the frame rate with the Nvidia control panel.
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor, affects all towns",
 		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns",
