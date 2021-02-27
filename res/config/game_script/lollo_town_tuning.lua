@@ -1,9 +1,18 @@
 local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local commonData = require('lollo_town_tuning.commonData')
+local logger = require('lollo_town_tuning.logger')
 
 local function _myErrorHandler(err)
     print('lollo town tuning caught error: ', err)
 end
+
+-- LOLLO NOTE you can update town sizes with
+-- api.cmd.sendCommand(api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa}))
+-- This will not add anything to the sandbox menu
+-- and its results will be adjusted to fall within the limits:
+-- min is 50, max is 800.
+-- However, this only applies to the display in the "editor" tab.
+-- Make your own control and you can grow and shrink the town beyond those limits!
 
 local _areaTypes = {
     res = {
@@ -36,27 +45,33 @@ local _eventNames = {
     updateState = 'updateState',
 }
 
+local _townInitialLandUseCapacities = {
+    bigStep = 500,
+    max = 5000,
+    min = 0,
+    step = 50,
+}
 local state = nil
 
-local _dataHelper = { }
-_dataHelper.cargoTypes = {
-    getAll = function()
-        local cargoNames = api.res.cargoTypeRep.getAll()
-        if not(cargoNames) then return {} end
+local _dataHelper = {
+    cargoTypes = {
+        getAll = function()
+            local cargoNames = api.res.cargoTypeRep.getAll()
+            if not(cargoNames) then return {} end
 
-        local results = {}
-        for k, v in pairs(cargoNames) do
-            if v ~= 'PASSENGERS' then -- note that passengers has id = 0
-                results[k] = api.res.cargoTypeRep.get(k)
+            local results = {}
+            for k, v in pairs(cargoNames) do
+                if v ~= 'PASSENGERS' then -- note that passengers has id = 0
+                    results[k] = api.res.cargoTypeRep.get(k)
+                end
             end
-        end
 
-        return results
-    end,
-}
-_dataHelper.shared = {
+            return results
+        end,
+    },
+    shared = {
     get = function()
-        local result = arrayUtils.cloneOmittingFields(state)
+        local result = arrayUtils.cloneDeepOmittingFields(state)
         if type(result) ~= 'table' then
             -- print('sharedData found no state, returning defaults')
             result = {
@@ -86,7 +101,7 @@ _dataHelper.shared = {
     setCapacityFactor = function(index)
         if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneOmittingFields(state)
+        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
         if type(newCommon.capacityFactor) ~= 'number' then
             newCommon.capacityFactor = _defaultCapacityFactor
         end
@@ -109,7 +124,7 @@ _dataHelper.shared = {
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newCommon)
         ))
 
         return true
@@ -133,7 +148,7 @@ _dataHelper.shared = {
     setConsumptionFactor = function(index)
         if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneOmittingFields(state)
+        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
         if type(newCommon.consumptionFactor) ~= 'number' then
             newCommon.consumptionFactor = _defaultConsumptionFactor
         end
@@ -156,7 +171,7 @@ _dataHelper.shared = {
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newCommon)
         ))
 
         return true
@@ -182,7 +197,7 @@ _dataHelper.shared = {
     setPersonCapacityFactor = function(index)
         if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneOmittingFields(state)
+        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
         if type(newCommon.personCapacityFactor) ~= 'number' then
             newCommon.personCapacityFactor = _defaultPersonCapacityFactor
         end
@@ -205,26 +220,27 @@ _dataHelper.shared = {
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newCommon)
         ))
 
         return true
     end,
-}
-_dataHelper.towns = {
-    get = function()
-        local townCapacities = api.engine.system.townBuildingSystem.getTown2personCapacitiesMap()
-        if not(townCapacities) then return {} end
+    },
+    towns = {
+        get = function()
+            local townCapacities = api.engine.system.townBuildingSystem.getTown2personCapacitiesMap()
+            if not(townCapacities) then return {} end
 
-        local results = {}
-        for id, personCapacities in pairs(townCapacities) do
-            results[id] = {
-                personCapacities = personCapacities,
-                townStatWindowId = 'temp.view.entity_' .. tostring(id)
-            }
-        end
-        return results
-    end,
+            local results = {}
+            for id, personCapacities in pairs(townCapacities) do
+                results[id] = {
+                    personCapacities = personCapacities,
+                    townStatWindowId = 'temp.view.entity_' .. tostring(id)
+                }
+            end
+            return results
+        end,
+    },
 }
 
 local _utils = {
@@ -262,68 +278,162 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
     if not(townData) then return end
 
-    local cargoTypes = _dataHelper.cargoTypes.getAll()
-    local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
-    cargoTypesGuiTable:setNumCols(3)
-    cargoTypesGuiTable:addRow({
-        api.gui.comp.TextView.new(_areaTypes.res.text),
-        api.gui.comp.TextView.new(_areaTypes.com.text),
-        api.gui.comp.TextView.new(_areaTypes.ind.text)
-    })
-    for cargoTypeId, cargoData in pairs(cargoTypes) do
+    local _addInitialLandUseCapacities = function()
+        local townInitialLandUseCapacitiesTable = api.gui.comp.Table.new(2, 'NONE')
+        townInitialLandUseCapacitiesTable:setNumCols(3)
+        townInitialLandUseCapacitiesTable:addRow({
+            api.gui.comp.TextView.new(_areaTypes.res.text),
+            api.gui.comp.TextView.new(_areaTypes.com.text),
+            api.gui.comp.TextView.new(_areaTypes.ind.text)
+        })
+
+        local _getField = function(resComInd)
+            local inputField = api.gui.comp.Slider.new(true)
+            inputField:setMaximum(_townInitialLandUseCapacities.max)
+            inputField:setMinimum(_townInitialLandUseCapacities.min)
+            inputField:setPageStep(_townInitialLandUseCapacities.bigStep)
+            inputField:setStep(_townInitialLandUseCapacities.step)
+            inputField:setValue(townData.initialLandUseCapacities[resComInd], false)
+            return inputField
+        end
+
         local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
-        resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-        resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
-        local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        resCheckBox:onToggle(
+        resComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        local resInput = _getField(1)
+        local resOutput = api.gui.comp.TextView.new(tostring(resInput:getValue()))
+        resComp:getLayout():addItem(resInput)
+        resComp:getLayout():addItem(resOutput)
+        resInput:onValueChanged(
             function(newValue)
-                cargoTypesGuiTable:setEnabled(false)
-                _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
-                cargoTypesGuiTable:setEnabled(true)
+                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                local newValueNumeric = tonumber(newValue)
+                if newValueNumeric == nil then return end
+                _actions.triggerUpdateTownInitialLandUse(
+                    townId,
+                    newValueNumeric,
+                    townData.initialLandUseCapacities[2],
+                    townData.initialLandUseCapacities[3]
+                )
+                local newValueString = tostring(newValue) if newValueString == nil then return end
+                resOutput:setText(newValueString)
             end
         )
-        for _, v in pairs(townData.cargoNeeds[1]) do
-            if v == cargoTypeId then resCheckBox:setSelected(true, false) end
-        end
-        resComp:getLayout():addItem(resCheckBox)
 
         local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
-        comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-        comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-        local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        comCheckBox:onToggle(
+        comComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        local comInput = _getField(2)
+        local comOutput = api.gui.comp.TextView.new(tostring(comInput:getValue()))
+        comComp:getLayout():addItem(comInput)
+        comComp:getLayout():addItem(comOutput)
+        comInput:onValueChanged(
             function(newValue)
-                cargoTypesGuiTable:setEnabled(false)
-                _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
-                cargoTypesGuiTable:setEnabled(true)
+                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                local newValueNumeric = tonumber(newValue)
+                if newValueNumeric == nil then return end
+                _actions.triggerUpdateTownInitialLandUse(
+                    townId,
+                    townData.initialLandUseCapacities[1],
+                    newValueNumeric,
+                    townData.initialLandUseCapacities[3]
+                )
+                local newValueString = tostring(newValue) if newValueString == nil then return end
+                comOutput:setText(newValueString)
             end
         )
-        for _, v in pairs(townData.cargoNeeds[2]) do
-            if v == cargoTypeId then comCheckBox:setSelected(true, false) end
-        end
-        comComp:getLayout():addItem(comCheckBox)
 
         local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
-        indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-        indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-        local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-        indCheckBox:onToggle(
+        indComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        local indInput = _getField(3)
+        local indOutput = api.gui.comp.TextView.new(tostring(indInput:getValue()))
+        indComp:getLayout():addItem(indInput)
+        indComp:getLayout():addItem(indOutput)
+        indInput:onValueChanged(
             function(newValue)
-                cargoTypesGuiTable:setEnabled(false)
-                _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
-                cargoTypesGuiTable:setEnabled(true)
+                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                local newValueNumeric = tonumber(newValue)
+                if newValueNumeric == nil then return end
+                _actions.triggerUpdateTownInitialLandUse(
+                    townId,
+                    townData.initialLandUseCapacities[1],
+                    townData.initialLandUseCapacities[2],
+                    newValueNumeric
+                )
+                local newValueString = tostring(newValue) if newValueString == nil then return end
+                indOutput:setText(newValueString)
             end
         )
-        for _, v in pairs(townData.cargoNeeds[3]) do
-            if v == cargoTypeId then indCheckBox:setSelected(true, false) end
-        end
-        indComp:getLayout():addItem(indCheckBox)
 
-        cargoTypesGuiTable:addRow({resComp, comComp, indComp})
+        townInitialLandUseCapacitiesTable:addRow({resComp, comComp, indComp})
+        return townInitialLandUseCapacitiesTable
     end
+    parentLayout:addItem(_addInitialLandUseCapacities())
 
-    parentLayout:addItem(cargoTypesGuiTable)
+    local _addRequirements = function()
+        local cargoTypes = _dataHelper.cargoTypes.getAll()
+        local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
+        cargoTypesGuiTable:setNumCols(3)
+        cargoTypesGuiTable:addRow({
+            api.gui.comp.TextView.new(_areaTypes.res.text),
+            api.gui.comp.TextView.new(_areaTypes.com.text),
+            api.gui.comp.TextView.new(_areaTypes.ind.text)
+        })
+        for cargoTypeId, cargoData in pairs(cargoTypes) do
+            local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
+            resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+            resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
+            local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+            resCheckBox:onToggle(
+                function(newValue)
+                    cargoTypesGuiTable:setEnabled(false)
+                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
+                    cargoTypesGuiTable:setEnabled(true)
+                end
+            )
+            for _, v in pairs(townData.cargoNeeds[1]) do
+                if v == cargoTypeId then resCheckBox:setSelected(true, false) end
+            end
+            resComp:getLayout():addItem(resCheckBox)
+
+            local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
+            comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+            comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+            local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+            comCheckBox:onToggle(
+                function(newValue)
+                    cargoTypesGuiTable:setEnabled(false)
+                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
+                    cargoTypesGuiTable:setEnabled(true)
+                end
+            )
+            for _, v in pairs(townData.cargoNeeds[2]) do
+                if v == cargoTypeId then comCheckBox:setSelected(true, false) end
+            end
+            comComp:getLayout():addItem(comCheckBox)
+
+            local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
+            indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+            indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+            local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+            indCheckBox:onToggle(
+                function(newValue)
+                    cargoTypesGuiTable:setEnabled(false)
+                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
+                    cargoTypesGuiTable:setEnabled(true)
+                end
+            )
+            for _, v in pairs(townData.cargoNeeds[3]) do
+                if v == cargoTypeId then indCheckBox:setSelected(true, false) end
+            end
+            indComp:getLayout():addItem(indCheckBox)
+
+            cargoTypesGuiTable:addRow({resComp, comComp, indComp})
+        end
+        return cargoTypesGuiTable
+    end
+    parentLayout:addItem(_addRequirements())
+
 end
+
 _actions.guiAddAllTownProps = function(parentLayout)
     local sharedData = _dataHelper.shared.get()
 
@@ -394,11 +504,20 @@ _actions.guiAddAllTownProps = function(parentLayout)
     parentLayout:addItem(personCapacityTextViewTitle)
     parentLayout:addItem(personCapacityToggleButtonGroup)
 end
+
 _actions.guiAddTuningMenu = function(windowId, townId)
+    logger.print('windowId =', windowId or 'NIL')
     local window = api.gui.util.getById(windowId)
     window:setResizable(true)
 
     local windowContent = window:getContent()
+    -- remove the "editor" tab if in sandbox mode
+    if windowContent:getNumTabs() > 3 then
+        local editorTab = windowContent:getTab(3)
+        editorTab:setVisible(false, false) -- does not work
+        editorTab:setEnabled(false) -- at least this works
+    end
+
     local tuningTab = api.gui.comp.Component.new('TUNING')
     tuningTab:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
     windowContent:insertTab(
@@ -410,37 +529,15 @@ _actions.guiAddTuningMenu = function(windowId, townId)
     _actions.guiAddAllTownProps(tuningLayout)
     _actions.guiAddOneTownProps(tuningLayout, townId)
 
-    local minimumSize = window:calcMinimumSize()
-    local newSize = api.gui.util.Size.new()
-    newSize.h = minimumSize.h + 250
-    newSize.w = minimumSize.w + 100
-    -- window:setMinimumSize(newSize) -- useless
-    window:setSize(newSize) -- flickers if h is too small
+    -- local minimumSize = window:calcMinimumSize()
+    -- local newSize = api.gui.util.Size.new()
+    -- newSize.h = minimumSize.h + 250
+    -- newSize.w = minimumSize.w + 500
+    -- -- window:setMinimumSize(newSize) -- useless
+    -- window:setSize(newSize) -- flickers if h is too small
     -- window:setMaximiseSize(newSize.w, newSize.h, 1) -- flickers if h is too small, could be useful tho
 end
-_actions.replaceBuildingWithSelf = function(oldBuildingId)
-    -- no good, must be called in a loop and leads to multithreading nightmare
-    if type(oldBuildingId) ~= 'number' or oldBuildingId < 0 then return end
 
-    local oldBuilding = api.engine.getComponent(oldBuildingId, api.type.ComponentType.TOWN_BUILDING)
-    if not(oldBuilding) then return end
-    -- skip buildings that do not accept freight
-    if not(oldBuilding.personCapacity) then return end
-    if type(oldBuilding.stockList) ~= 'number' then return end
-    if oldBuilding.stockList < 0 then return end
-    local oldConstructionId = oldBuilding.personCapacity -- whatever they were thinking
-    if type(oldConstructionId) ~= 'number' then return end
-    if oldConstructionId < 0 then return end
-
-    local oldConstruction = game.interface.getEntity(oldConstructionId)
-
-    local newId = game.interface.upgradeConstruction(
-        oldConstruction.id,
-        oldConstruction.fileName,
-        -- leadingStation.params -- NO!
-        arrayUtils.cloneOmittingFields(oldConstruction.params, {'seed'})
-    )
-end
 _actions.triggerUpdateTown = function(townId)
     local cargoNeeds = _utils.getCargoNeeds(townId)
     if not(cargoNeeds) then return end
@@ -450,6 +547,7 @@ _actions.triggerUpdateTown = function(townId)
         api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
     )
 end
+
 _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
     local cargoNeeds = _utils.getCargoNeeds(townId)
     if not(cargoNeeds) then return end
@@ -468,6 +566,13 @@ _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoType
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
         api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
+    )
+end
+
+_actions.triggerUpdateTownInitialLandUse = function(townId, resCapa, comCapa, indCapa)
+    api.cmd.sendCommand(
+        -- this won't trigger updateFn for all the town buildings
+        api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa})
     )
 end
 
@@ -503,14 +608,17 @@ function data()
             -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
             if id == _eventId then
                 if name == _eventNames.updateState then
-                    commonData.set(params) -- do this now, the other thread might take too long
+                    commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
                     state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
                     -- print('state updated, new state =')
                     -- debugPrint(state)
 
+                    -- logger.print('timer =', os.time())
                     for townId_, _ in pairs(_dataHelper.towns.get()) do
                         _actions.triggerUpdateTown(townId_)
                     end
+                    logger.print('update triggered for all towns')
+                    -- logger.print('timer now =', os.time()) nearly instant or useless
                 end
             end
         end,
@@ -544,7 +652,7 @@ function data()
                     personCapacityFactor = _defaultPersonCapacityFactor,
                 }
             end
-            commonData.set(state)
+            -- commonData.set(state)
         end,
     }
 end

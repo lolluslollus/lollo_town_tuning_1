@@ -1,7 +1,7 @@
 local arrayUtils = {}
 
 arrayUtils.arrayHasValue = function(tab, val)
-    for i, v in ipairs(tab) do
+    for _, v in pairs(tab) do
         if v == val then
             return true
         end
@@ -24,16 +24,16 @@ arrayUtils.map = function(arr, func)
     return results
 end
 
-arrayUtils.cloneDeepOmittingFields = function(tab, fields2Omit)
+arrayUtils.cloneDeepOmittingFields = function(tab, fields2Omit, isTryUserdata)
     local results = {}
-    if type(tab) ~= 'table' then return results end
+    if type(tab) ~= 'table' and not(isTryUserdata and type(tab) == 'userdata') then return results end
 
     if type(fields2Omit) ~= 'table' then fields2Omit = {} end
 
     for key, value in pairs(tab) do
         if not arrayUtils.arrayHasValue(fields2Omit, key) then
-            if type(value) == 'table' then
-                results[key] = arrayUtils.cloneDeepOmittingFields(value, fields2Omit)
+            if type(value) == 'table' or (isTryUserdata and type(value) == 'userdata') then
+                results[key] = arrayUtils.cloneDeepOmittingFields(value, fields2Omit, isTryUserdata)
             else
                 results[key] = value
             end
@@ -42,9 +42,9 @@ arrayUtils.cloneDeepOmittingFields = function(tab, fields2Omit)
     return results
 end
 
-arrayUtils.cloneOmittingFields = function(tab, fields2Omit)
+arrayUtils.cloneOmittingFields = function(tab, fields2Omit, isTryUserdata)
     local results = {}
-    if type(tab) ~= 'table' then return results end
+    if type(tab) ~= 'table' and not(isTryUserdata and type(tab) == 'userdata') then return results end
 
     if type(fields2Omit) ~= 'table' then fields2Omit = {} end
 
@@ -76,8 +76,20 @@ arrayUtils.concatKeysValues = function(table1, table2)
     end
 end
 
+arrayUtils.getFirst = function(tab)
+    if tab == nil or #tab == nil then return nil end
+
+    return tab[1]
+end
+
+arrayUtils.getLast = function(tab)
+    if tab == nil or #tab == nil then return nil end
+
+    return tab[#tab]
+end
+
 arrayUtils.sort = function(table0, elementName, asc)
-    if type(table0) ~= 'table' or type(elementName) ~= 'string' then
+    if type(table0) ~= 'table' then
         return table0
     end
 
@@ -85,18 +97,33 @@ arrayUtils.sort = function(table0, elementName, asc)
         asc = true
     end
 
-    table.sort(
-        table0,
-        function(elem1, elem2)
-            if not elem1 or not elem2 or not (elem1[elementName]) or not (elem2[elementName]) then
-                return true
+    if type(elementName) == 'string' then
+        table.sort(
+            table0,
+            function(elem1, elem2)
+                if not elem1 or not elem2 or not (elem1[elementName]) or not (elem2[elementName]) then
+                    return true
+                end
+                if asc then
+                    return elem1[elementName] < elem2[elementName]
+                end
+                return elem1[elementName] > elem2[elementName]
             end
-            if asc then
-                return elem1[elementName] < elem2[elementName]
+        )
+    else
+        table.sort(
+            table0,
+            function(elem1, elem2)
+                if not elem1 or not elem2 or not (elem1) or not (elem2) then
+                    return true
+                end
+                if asc then
+                    return elem1 < elem2
+                end
+                return elem1 > elem2
             end
-            return elem1[elementName] > elem2[elementName]
-        end
-    )
+        )
+    end
 
     return table0
 end
@@ -123,6 +150,17 @@ arrayUtils.addProps = function(baseTab, addedTab)
     end
 
     return baseTab
+end
+
+arrayUtils.getReversed = function(tab)
+    if type(tab) ~= 'table' then return tab end
+
+    local reversedTab = {}
+    for i = #tab, 1, -1 do
+        reversedTab[#reversedTab+1] = tab[i]
+    end
+
+    return reversedTab
 end
 
 return arrayUtils

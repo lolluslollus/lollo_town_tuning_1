@@ -1,5 +1,7 @@
 function data()
+	local arrayUtils = require('lollo_town_tuning.arrayUtils')
 	local commonData = require('lollo_town_tuning.commonData')
+	local logger = require('lollo_town_tuning.logger')
 	local modSettings = require('/lollo_town_tuning/settings')
 
 	local function loadConstructionFunc(fileName, data)
@@ -18,49 +20,50 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 
-			-- local _testBuildingFileNameSegment = 'era_b/com_1_4x4_04.con'
+			if logger.getIsExtendedLog() then
+				local _testBuildingFileNameSegment = 'era_b/com_1_4x4_04.con'
 
-			-- local sampleResult = {
-			-- 	personCapacity = {
-			-- 		capacity = 4,
-			-- 		type = 'COMMERCIAL', -- 'RESIDENTIAL' 'INDUSTRIAL'
-			-- 	},
-			-- 	rule = { -- only commercial and industrial have this
-			-- 		capacity = 1,
-			-- 		consumptionFactor = 1.2,
-			-- 		input = {
-			-- 			{ 1, },
-			-- 		},
-			-- 		output = { },
-			-- 	},
-			-- }
+				-- local sampleResult = {
+				-- 	personCapacity = {
+				-- 		capacity = 4,
+				-- 		type = 'COMMERCIAL', -- 'RESIDENTIAL' 'INDUSTRIAL'
+				-- 	},
+				-- 	rule = { -- only commercial and industrial have this
+				-- 		capacity = 1,
+				-- 		consumptionFactor = 1.2,
+				-- 		input = {
+				-- 			{ 1, },
+				-- 		},
+				-- 		output = { },
+				-- 	},
+				-- }
 
-			-- print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
---[[ 			-- if fileName:find('era_b/com_1_1x2_02.con') then
-				if fileName:find(_testBuildingFileNameSegment) then
-				print('result =')
-				debugPrint(result)
-				print('data =')
-				debugPrint(data)
-				print('params =')
-				debugPrint(arrayUtils.cloneOmittingFields(params, {'state'}))
-			end ]]
+				-- logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
+				if fileName:find('era_b/com_1_1x2_02.con') then
+					if fileName:find(_testBuildingFileNameSegment) then
+						print('result =') debugPrint(result)
+						print('data =') debugPrint(data)
+						print('params =') debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
+					end
+				end
+			end
 
 			local common = commonData.get()
 			-- if fileName:find(_testBuildingFileNameSegment) then
-			-- 	print('_commonData.common.get() =')
-			-- 	debugPrint(common)
+			-- 	logger.print('_commonData.common.get() =') debugPrint(common)
 			-- end
 			if result.rule then
 				-- LOLLO TODO this needs testing: does the consumption factor really change things?
 				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
 				-- So, capacity etc changes will affect all towns.
-				-- print('result.rule.capacity before =', result.rule.capacity)
-				-- print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				logger.print('result.rule.capacity before =', result.rule.capacity)
+				logger.print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				logger.print('(common.capacityFactor or 1.0) =', (common.capacityFactor or 1.0))
+				logger.print('common.consumptionFactor or 1.0 =', common.consumptionFactor or 1.0)
 				result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
 				result.rule.consumptionFactor = common.consumptionFactor or 1.0
-				-- print('result.rule.capacity after =', result.rule.capacity)
-				-- print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
+				logger.print('result.rule.capacity after =', result.rule.capacity)
+				logger.print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
 				-- if fileName:find(_testBuildingFileNameSegment) then
