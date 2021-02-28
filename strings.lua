@@ -32,6 +32,7 @@ return {
 		KNOWN ISSUES:
 		- When you alter something across all towns, the process can take a while. Click once and wait until the game unfreezes. I have no way of reporting back when the operation is complete.
 		- Sometimes, the sliders to alter the initial capacity have no effect. Just slide them again a notch.
+		- The "Editor" tab that appears in sandbox mode may show the wrong values. This is why I deactivated it.
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
 		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Only click once and wait until the game unfreezes!",
