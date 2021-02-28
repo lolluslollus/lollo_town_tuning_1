@@ -16,7 +16,7 @@ return {
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-		NOTE: Be patient when you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future. The game will freeze for a while.
+		NOTE: whenever you alter a parameter that affects all towns, it might take a while before the job is done because it affects *all* buildings, existing end future. Click one button only and wait. The game will freeze for a while.
         
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
@@ -30,8 +30,6 @@ return {
     	- Limit the frame rate with the Nvidia control panel.
 
 		KNOWN ISSUES:
-		- When you alter something across all towns, the process can take a while. Click once and wait until the game unfreezes. I have no way of reporting back when the operation is complete.
-		- Sometimes, the sliders to alter the initial capacity have no effect. Just slide them again a notch.
 		- The "Editor" tab that appears in sandbox mode may show the wrong values. This is why I deactivated it.
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
