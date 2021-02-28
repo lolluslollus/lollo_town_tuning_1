@@ -89,7 +89,7 @@ local _dataHelper = {
         if type(factor) ~= 'number' then factor = _defaultCapacityFactor end
 
         local result = 3
-        if factor <= 0.1 then
+        if factor <= 0.25 then
             result = 1
         elseif factor == 0.5 then
             result = 2
@@ -111,7 +111,7 @@ local _dataHelper = {
 
         local newFactor = _defaultCapacityFactor
         if index <= 1 then
-            newFactor = 0.1
+            newFactor = 0.25
         elseif index == 2 then
             newFactor = 0.5
         elseif index == 4 then
@@ -136,7 +136,7 @@ local _dataHelper = {
         if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
 
         local result = 3
-        if factor <= 0.1 then
+        if factor <= 0.3 then
             result = 1
         elseif factor == 0.6 then
             result = 2
@@ -158,7 +158,7 @@ local _dataHelper = {
 
         local newFactor = _defaultConsumptionFactor
         if index <= 1 then
-            newFactor = 0.1
+            newFactor = 0.3
         elseif index == 2 then
             newFactor = 0.6
         elseif index == 4 then
@@ -185,7 +185,7 @@ local _dataHelper = {
         end
 
         local result = 3
-        if factor <= 0.1 then
+        if factor <= 0.25 then
             result = 1
         elseif factor == 0.5 then
             result = 2
@@ -207,7 +207,7 @@ local _dataHelper = {
 
         local newFactor = _defaultPersonCapacityFactor
         if index <= 1 then
-            newFactor = 0.1
+            newFactor = 0.25
         elseif index == 2 then
             newFactor = 0.5
         elseif index == 4 then
