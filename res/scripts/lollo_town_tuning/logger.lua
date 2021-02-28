@@ -1,5 +1,5 @@
 local _constants = {
-    isExtendedLog = true
+    isExtendedLog = false -- true
 }
 
 local _util = {

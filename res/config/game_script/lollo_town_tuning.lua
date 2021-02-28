@@ -572,7 +572,11 @@ end
 _actions.triggerUpdateTownInitialLandUse = function(townId, resCapa, comCapa, indCapa)
     api.cmd.sendCommand(
         -- this won't trigger updateFn for all the town buildings
-        api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa})
+        api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa}),
+        function(result, success)
+            logger.print('setTownInfo callback, success =', success)
+            logger.debugPrint(result)
+        end
     )
 end
 
