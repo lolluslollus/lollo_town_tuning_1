@@ -48,6 +48,11 @@ local _eventNames = {
     updateState = 'updateState',
 }
 
+-- these 3 text fields are global so they can update when the API has run
+local _guiResOutput = nil -- api.gui.comp.TextView.new('')
+local _guiComOutput = nil -- api.gui.comp.TextView.new('')
+local _guiIndOutput = nil -- api.gui.comp.TextView.new('')
+
 local _townInitialLandUseCapacities = {
     bigStep = 500,
     max = 5000,
@@ -300,64 +305,37 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
 
         townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.res.initialCapaText))
         local resInput = _getField(1)
-        local resOutput = api.gui.comp.TextView.new(tostring(resInput:getValue()))
+        _guiResOutput:setText(tostring(resInput:getValue()))
         townInitialLandUseCapacitiesList:getLayout():addItem(resInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(resOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(_guiResOutput)
         resInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                local newValueNumeric = tonumber(newValue)
-                if newValueNumeric == nil then return end
-                _actions.triggerUpdateTownInitialLandUse(
-                    townId,
-                    newValueNumeric,
-                    townData.initialLandUseCapacities[2],
-                    townData.initialLandUseCapacities[3]
-                )
-                local newValueString = tostring(newValue) if newValueString == nil then return end
-                resOutput:setText(newValueString)
+                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 1)
             end
         )
 
         townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.com.initialCapaText))
         local comInput = _getField(2)
-        local comOutput = api.gui.comp.TextView.new(tostring(comInput:getValue()))
+        _guiComOutput:setText(tostring(comInput:getValue()))
         townInitialLandUseCapacitiesList:getLayout():addItem(comInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(comOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(_guiComOutput)
         comInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                local newValueNumeric = tonumber(newValue)
-                if newValueNumeric == nil then return end
-                _actions.triggerUpdateTownInitialLandUse(
-                    townId,
-                    townData.initialLandUseCapacities[1],
-                    newValueNumeric,
-                    townData.initialLandUseCapacities[3]
-                )
-                local newValueString = tostring(newValue) if newValueString == nil then return end
-                comOutput:setText(newValueString)
+                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 2)
             end
         )
 
         townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.ind.initialCapaText))
         local indInput = _getField(3)
-        local indOutput = api.gui.comp.TextView.new(tostring(indInput:getValue()))
+        _guiIndOutput:setText(tostring(indInput:getValue()))
         townInitialLandUseCapacitiesList:getLayout():addItem(indInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(indOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(_guiIndOutput)
         indInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                local newValueNumeric = tonumber(newValue)
-                if newValueNumeric == nil then return end
-                _actions.triggerUpdateTownInitialLandUse(
-                    townId,
-                    townData.initialLandUseCapacities[1],
-                    townData.initialLandUseCapacities[2],
-                    newValueNumeric
-                )
-                local newValueString = tostring(newValue) if newValueString == nil then return end
-                indOutput:setText(newValueString)
+                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 3)
             end
         )
 
@@ -569,13 +547,23 @@ _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoType
     )
 end
 
-_actions.triggerUpdateTownInitialLandUse = function(townId, resCapa, comCapa, indCapa)
+_actions.triggerUpdateTownInitialLandUse = function(townId, newCapa, resComInd)
+    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    local resCapa = resComInd == 1 and newCapa or townData.initialLandUseCapacities[1]
+    local comCapa = resComInd == 2 and newCapa or townData.initialLandUseCapacities[2]
+    local indCapa = resComInd == 3 and newCapa or townData.initialLandUseCapacities[3]
+
     api.cmd.sendCommand(
         -- this won't trigger updateFn for all the town buildings
         api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa}),
         function(result, success)
             logger.print('setTownInfo callback, success =', success)
             logger.debugPrint(result)
+            if success and result and result.initialLandUseCapacities then
+                _guiResOutput:setText(tostring(result.initialLandUseCapacities[1]))
+                _guiComOutput:setText(tostring(result.initialLandUseCapacities[2]))
+                _guiIndOutput:setText(tostring(result.initialLandUseCapacities[3]))
+            end
         end
     )
 end
@@ -593,6 +581,10 @@ function data()
                 xpcall(
                     function()
                         if name == 'idAdded' and id:find('temp.view.entity_') then
+                            -- these 3 must be inited in the UI thread
+                            if _guiResOutput == nil then _guiResOutput = api.gui.comp.TextView.new('') end
+                            if _guiComOutput == nil then _guiComOutput = api.gui.comp.TextView.new('') end
+                            if _guiIndOutput == nil then _guiIndOutput = api.gui.comp.TextView.new('') end
                             for townId, townData in pairs(_dataHelper.towns.get()) do
                                 if townData.townStatWindowId == id then
                                     _actions.guiAddTuningMenu(id, townId)
