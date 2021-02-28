@@ -29,13 +29,16 @@ return {
         - Use one screen instead of two
     	- Limit the frame rate with the Nvidia control panel.
         ]],
-		CAPACITY_FACTOR = "Industrial and commercial capacity factor (ie demand), affects all towns",
-		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns",
+		CAPACITY_FACTOR = "Industrial and commercial capacity factor (ie demand), affects all towns. Click once and wait!",
+		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Click once and wait!",
 		FASTER_LOW_GEOMETRY = "Faster low geometry setting",
 		FASTER_TOWN_DEVELOP_INTERVAL = "Faster town develop interval",
+		INITIAL_COM_CAPACITY = "Initial commercial capacity",
+		INITIAL_IND_CAPACITY = "Initial industrial capacity",
+		INITIAL_RES_CAPACITY = "Initial residential capacity",
 		NO_SKYSCRAPERS = "Bar commercial and residential skyscrapers (only applies to new buildings)",
 		NO_SQUARE_CROSSINGS = "AI streets cross at various corners",
-		PERSON_CAPACITY_FACTOR = "Person capacity factor, affects all buildings in all towns",
+		PERSON_CAPACITY_FACTOR = "Person capacity factor, affects all buildings in all towns. Click once and wait!",
 		TUNING_TAB_LABEL = "Tuning"
 	},
 

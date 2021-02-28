@@ -18,16 +18,19 @@ local _areaTypes = {
     res = {
         id = 'res',
         index = 1,
+        initialCapaText = _('INITIAL_RES_CAPACITY'),
         text = _('Residential')
     },
     com = {
         id = 'com',
         index = 2,
+        initialCapaText = _('INITIAL_COM_CAPACITY'),
         text = _('Commercial')
     },
     ind = {
         id = 'ind',
         index = 3,
+        initialCapaText = _('INITIAL_IND_CAPACITY'),
         text = _('Industrial')
     }
 }
@@ -274,19 +277,12 @@ local _utils = {
 local _actions = {}
 _actions.guiAddOneTownProps = function(parentLayout, townId)
     if type(townId) ~= 'number' or townId < 1 then return end
+    logger.print('townId =', townId or 'NIL')
 
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
     if not(townData) then return end
 
     local _addInitialLandUseCapacities = function()
-        local townInitialLandUseCapacitiesTable = api.gui.comp.Table.new(2, 'NONE')
-        townInitialLandUseCapacitiesTable:setNumCols(3)
-        townInitialLandUseCapacitiesTable:addRow({
-            api.gui.comp.TextView.new(_areaTypes.res.text),
-            api.gui.comp.TextView.new(_areaTypes.com.text),
-            api.gui.comp.TextView.new(_areaTypes.ind.text)
-        })
-
         local _getField = function(resComInd)
             local inputField = api.gui.comp.Slider.new(true)
             inputField:setMaximum(_townInitialLandUseCapacities.max)
@@ -294,15 +290,19 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             inputField:setPageStep(_townInitialLandUseCapacities.bigStep)
             inputField:setStep(_townInitialLandUseCapacities.step)
             inputField:setValue(townData.initialLandUseCapacities[resComInd], false)
+            local size = api.gui.util.Size.new() size.w = 600
+            inputField:setMinimumSize(size)
             return inputField
         end
 
-        local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
-        resComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        local townInitialLandUseCapacitiesList = api.gui.comp.Component.new('townInitialLandUseCapacitiesList') -- _areaTypes.res.id)
+        townInitialLandUseCapacitiesList:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+
+        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.res.initialCapaText))
         local resInput = _getField(1)
         local resOutput = api.gui.comp.TextView.new(tostring(resInput:getValue()))
-        resComp:getLayout():addItem(resInput)
-        resComp:getLayout():addItem(resOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(resInput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(resOutput)
         resInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
@@ -319,12 +319,11 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             end
         )
 
-        local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
-        comComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.com.initialCapaText))
         local comInput = _getField(2)
         local comOutput = api.gui.comp.TextView.new(tostring(comInput:getValue()))
-        comComp:getLayout():addItem(comInput)
-        comComp:getLayout():addItem(comOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(comInput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(comOutput)
         comInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
@@ -341,12 +340,11 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             end
         )
 
-        local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
-        indComp:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.ind.initialCapaText))
         local indInput = _getField(3)
         local indOutput = api.gui.comp.TextView.new(tostring(indInput:getValue()))
-        indComp:getLayout():addItem(indInput)
-        indComp:getLayout():addItem(indOutput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(indInput)
+        townInitialLandUseCapacitiesList:getLayout():addItem(indOutput)
         indInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
@@ -363,8 +361,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             end
         )
 
-        townInitialLandUseCapacitiesTable:addRow({resComp, comComp, indComp})
-        return townInitialLandUseCapacitiesTable
+        return townInitialLandUseCapacitiesList
     end
     parentLayout:addItem(_addInitialLandUseCapacities())
 
@@ -509,6 +506,9 @@ _actions.guiAddTuningMenu = function(windowId, townId)
     logger.print('windowId =', windowId or 'NIL')
     local window = api.gui.util.getById(windowId)
     window:setResizable(true)
+
+    local minSize = api.gui.util.Size.new() minSize.h = 1000 minSize.w = 800
+    window:setSize(minSize)
 
     local windowContent = window:getContent()
     -- remove the "editor" tab if in sandbox mode
