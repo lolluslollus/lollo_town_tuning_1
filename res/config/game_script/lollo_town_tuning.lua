@@ -481,6 +481,11 @@ _actions.guiAddAllTownProps = function(parentLayout)
 end
 
 _actions.guiAddTuningMenu = function(windowId, townId)
+    -- these 3 must be inited in the UI thread
+    _guiResOutput = api.gui.comp.TextView.new('')
+    _guiComOutput = api.gui.comp.TextView.new('')
+    _guiIndOutput = api.gui.comp.TextView.new('')
+
     logger.print('windowId =', windowId or 'NIL')
     local window = api.gui.util.getById(windowId)
     window:setResizable(true)
@@ -581,10 +586,6 @@ function data()
                 xpcall(
                     function()
                         if name == 'idAdded' and id:find('temp.view.entity_') then
-                            -- these 3 must be inited in the UI thread
-                            if _guiResOutput == nil then _guiResOutput = api.gui.comp.TextView.new('') end
-                            if _guiComOutput == nil then _guiComOutput = api.gui.comp.TextView.new('') end
-                            if _guiIndOutput == nil then _guiIndOutput = api.gui.comp.TextView.new('') end
                             for townId, townData in pairs(_dataHelper.towns.get()) do
                                 if townData.townStatWindowId == id then
                                     _actions.guiAddTuningMenu(id, townId)
