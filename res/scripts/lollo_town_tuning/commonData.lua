@@ -33,6 +33,9 @@ helper.get = function()
         }
         -- print('no table found, returning defaults')
     end
+
+    -- LOLLO TODO check if this works, it's better than using the file
+    print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
     -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(result) -- NO!
     -- logger.print('returning data =') logger.debugPrint(result)
     return result
@@ -47,6 +50,7 @@ helper.set = function(newData)
     or savedData.personCapacityFactor ~= newData.personCapacityFactor then
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
+        _G.lollo_town_tuning = { commonData = newData }
         fileUtils.saveTable(newData, _fileName)
     end
 end
