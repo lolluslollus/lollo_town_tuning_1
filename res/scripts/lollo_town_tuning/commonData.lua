@@ -12,7 +12,7 @@ local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 local _fileName = _currentDir .. '/commonDataTemp.lua'
 -- print('file name =', _fileName)
 
--- local _helperBuffer = nil -- LOLLO NOTE it would be nice to have these, but it won't work across threads, see comments below.
+-- local _helperBuffer = nil -- LOLLO NOTE it would be nice to have these, but it won't work across states, see comments below.
 local helper = {
     defaultCapacityFactor = 1.0,
     defaultConsumptionFactor = 1.2,
@@ -34,8 +34,6 @@ helper.get = function()
         -- print('no table found, returning defaults')
     end
 
-    -- LOLLO TODO check if this works, it's better than using the file
-    print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
     -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(result) -- NO!
     -- logger.print('returning data =') logger.debugPrint(result)
     return result
@@ -50,7 +48,7 @@ helper.set = function(newData)
     or savedData.personCapacityFactor ~= newData.personCapacityFactor then
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
-        _G.lollo_town_tuning = { commonData = newData }
+        -- _G.lollo_town_tuning = { commonData = newData } -- NO!
         fileUtils.saveTable(newData, _fileName)
     end
 end
