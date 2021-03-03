@@ -93,15 +93,17 @@ local _dataHelper = {
     getCapacityFactorIndex = function(factor)
         if type(factor) ~= 'number' then factor = _defaultCapacityFactor end
 
-        local result = 3
-        if factor <= 0.25 then
+        local result = 4
+        if factor <= 0.1 then
             result = 1
-        elseif factor == 0.5 then
+        elseif factor == 0.25 then
             result = 2
+        elseif factor == 0.5 then
+            result = 3
         elseif factor == 1.5 then
-            result = 4
-        elseif factor >= 2 then
             result = 5
+        elseif factor >= 2 then
+            result = 6
         end
 
         return result
@@ -116,12 +118,14 @@ local _dataHelper = {
 
         local newFactor = _defaultCapacityFactor
         if index <= 1 then
-            newFactor = 0.25
+            newFactor = 0.1
         elseif index == 2 then
+            newFactor = 0.25
+        elseif index == 3 then
             newFactor = 0.5
-        elseif index == 4 then
+        elseif index == 5 then
             newFactor = 1.5
-        elseif index >= 5 then
+        elseif index >= 6 then
             newFactor = 2.0
         end
 
@@ -147,8 +151,10 @@ local _dataHelper = {
             result = 2
         elseif factor == 1.8 then
             result = 4
-        elseif factor >= 2.4 then
+        elseif factor == 2.4 then
             result = 5
+        elseif factor >= 3.0 then
+            result = 6
         end
 
         return result
@@ -168,8 +174,10 @@ local _dataHelper = {
             newFactor = 0.6
         elseif index == 4 then
             newFactor = 1.8
-        elseif index >= 5 then
+        elseif index == 5 then
             newFactor = 2.4
+        elseif index >= 6 then
+            newFactor = 4.8
         end
 
         if newFactor == newCommon.consumptionFactor then return false end
@@ -189,15 +197,17 @@ local _dataHelper = {
             factor = _defaultPersonCapacityFactor
         end
 
-        local result = 3
-        if factor <= 0.25 then
+        local result = 4
+        if factor <= 0.1 then
             result = 1
-        elseif factor == 0.5 then
+        elseif factor == 0.25 then
             result = 2
+        elseif factor == 0.5 then
+            result = 3
         elseif factor == 1.5 then
-            result = 4
-        elseif factor >= 2.0 then
             result = 5
+        elseif factor >= 2.0 then
+            result = 6
         end
 
         return result
@@ -212,12 +222,14 @@ local _dataHelper = {
 
         local newFactor = _defaultPersonCapacityFactor
         if index <= 1 then
-            newFactor = 0.25
+            newFactor = 0.1
         elseif index == 2 then
+            newFactor = 0.25
+        elseif index == 3 then
             newFactor = 0.5
-        elseif index == 4 then
+        elseif index == 5 then
             newFactor = 1.5
-        elseif index >= 5 then
+        elseif index >= 6 then
             newFactor = 2.0
         end
 
@@ -414,11 +426,12 @@ _actions.guiAddAllTownProps = function(parentLayout)
 
     local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
     local capacityToggleButtons = {}
-    capacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
-    capacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
-    capacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
-    capacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
-    capacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+    capacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
+    capacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
+    capacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
+    capacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
+    capacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
+    capacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
     local capacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
     capacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
     capacityToggleButtonGroup:setEmitSignal(false)
@@ -439,6 +452,7 @@ _actions.guiAddAllTownProps = function(parentLayout)
     consumptionToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
     consumptionToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
     consumptionToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+    consumptionToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+++"))
     local consumptionToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
     consumptionToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
     consumptionToggleButtonGroup:setEmitSignal(false)
@@ -454,11 +468,12 @@ _actions.guiAddAllTownProps = function(parentLayout)
 
     local personCapacityTextViewTitle = api.gui.comp.TextView.new(_('PERSON_CAPACITY_FACTOR'))
     local personCapacityToggleButtons = {}
-    personCapacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
-    personCapacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
-    personCapacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
-    personCapacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
-    personCapacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+    personCapacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
+    personCapacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
+    personCapacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
+    personCapacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
+    personCapacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
+    personCapacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
     local personCapacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
     personCapacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
     personCapacityToggleButtonGroup:setEmitSignal(false)
@@ -595,16 +610,21 @@ function data()
                         end
                     end,
                     _myErrorHandler
-            )
+                )
             end
         end,
+        -- guiInit = function()
+        -- fires once on start, it seems to fire after the worker thread fired save()
+        --     logger.print('guiInit firing')
+        -- end,
         -- guiUpdate = function()
+        -- fires at intervals in the gui thread
         -- end,
         handleEvent = function(src, id, name, params)
             -- if src == 'guidesystem.lua' then return end
             -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
             if id == _eventId then
-                if name == _eventNames.updateState then
+                if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
                     commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
                     state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
                     -- print('state updated, new state =')
@@ -619,37 +639,43 @@ function data()
                 end
             end
         end,
-        -- update = function()
-        --     -- fires regularly in the worker thread
-        --     print('script.update')
-        -- end,
-        save = function()
-            -- fires when the worker thread changes the state
-            -- print('script.save')
-            if not state then state = {} end
-            if not state.capacityFactor then state.capacityFactor = _defaultCapacityFactor end
-            if not state.consumptionFactor then state.consumptionFactor = _defaultConsumptionFactor end
-            if not state.personCapacityFactor then state.personCapacityFactor = _defaultPersonCapacityFactor end
-            return state
-        end,
         load = function(loadedState)
-            -- fires once in the worker thread, at game load, and many times in the UI thread
-            -- print('script.load')
+            -- fires once in the worker thread at game load, and many times in the UI thread
+            -- note that the state can only be changed in the worker thread.
             if loadedState then
-                -- print('one')
+                -- logger.print('script.load firing, loadedState is') logger.debugPrint(loadedState)
                 state = {}
                 state.capacityFactor = loadedState.capacityFactor or _defaultCapacityFactor
                 state.consumptionFactor = loadedState.consumptionFactor or _defaultConsumptionFactor
                 state.personCapacityFactor = loadedState.personCapacityFactor or _defaultPersonCapacityFactor
             else
-                -- print('two')
+                -- logger.print('script.load firing, loadedState is NIL, api.gui is', not(api.gui) and 'NIL' or 'AVAILABLE')
                 state = {
                     capacityFactor = _defaultCapacityFactor,
                     consumptionFactor = _defaultConsumptionFactor,
                     personCapacityFactor = _defaultPersonCapacityFactor,
                 }
             end
-            -- commonData.set(state)
+            if not(api.gui) then -- this is the one call from the worker thread, when starting
+                -- (there are actually two calls on start, not one, never mind)
+                -- loadedState is the last saved state from the save file (eg lollo-test-01.sav.lua)
+                -- use it to update the temporary file, which we need to convey data to building.updateFn() across lua states
+                logger.print('script.load firing from the worker thread, state =') logger.debugPrint(state)
+                commonData.set(state)
+            end
         end,
+        save = function()
+            -- fired from the worker thread, at intervals
+            -- logger.print('script.save firing, api.gui is', not(api.gui) and 'NIL' or 'AVAILABLE')
+            if not state then state = {} end
+            if not state.capacityFactor then state.capacityFactor = _defaultCapacityFactor end
+            if not state.consumptionFactor then state.consumptionFactor = _defaultConsumptionFactor end
+            if not state.personCapacityFactor then state.personCapacityFactor = _defaultPersonCapacityFactor end
+            return state
+        end,
+        -- update = function()
+        --     -- fires at intervals in the worker thread
+        --     print('script.update')
+        -- end,
     }
 end
