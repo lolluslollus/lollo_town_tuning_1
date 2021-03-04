@@ -2,7 +2,7 @@ function data()
 	local arrayUtils = require('lollo_town_tuning.arrayUtils')
 	local commonData = require('lollo_town_tuning.commonData')
 	local logger = require('lollo_town_tuning.logger')
-	local modSettings = require('/lollo_town_tuning/settings')
+	local modSettings = require('lollo_town_tuning.settings')
 
 	local function loadConstructionFunc(fileName, data)
 		-- alter properties of all buildings in all towns
@@ -49,21 +49,17 @@ function data()
 			end
 
 			local common = commonData.get()
-			-- if fileName:find(_testBuildingFileNameSegment) then
-			-- 	logger.print('_commonData.common.get() =') debugPrint(common)
-			-- end
 			if result.rule then
-				-- LOLLO TODO this needs testing: does the consumption factor really change things?
 				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
-				-- So, capacity etc changes will affect all towns.
-				logger.print('result.rule.capacity before =', result.rule.capacity)
-				logger.print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
-				logger.print('(common.capacityFactor or 1.0) =', (common.capacityFactor or 1.0))
-				logger.print('common.consumptionFactor or 1.0 =', common.consumptionFactor or 1.0)
+				-- So, capacity etc changes will affect all towns. COnvenient but slow.
+				-- logger.print('result.rule.capacity before =', result.rule.capacity)
+				-- logger.print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				-- logger.print('(common.capacityFactor or 1.0) =', (common.capacityFactor or 1.0))
+				-- logger.print('common.consumptionFactor or 1.0 =', common.consumptionFactor or 1.0)
 				result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
 				result.rule.consumptionFactor = common.consumptionFactor or 1.0
-				logger.print('result.rule.capacity after =', result.rule.capacity)
-				logger.print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
+				-- logger.print('result.rule.capacity after =', result.rule.capacity)
+				-- logger.print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
 			end
 			if result.personCapacity then
 				-- if fileName:find(_testBuildingFileNameSegment) then
@@ -120,7 +116,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 5,
+			minorVersion = 6,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('NAME'),
@@ -137,30 +133,36 @@ function data()
                     key = 'noSkyscrapers',
                     name = _('NO_SKYSCRAPERS'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = 1,
+                    defaultIndex = modSettings.defaultParams.noSkyscrapers,
                 },
                 {
                     key = 'noSquareCrossings',
                     name = _('NO_SQUARE_CROSSINGS'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = 1,
+                    defaultIndex = modSettings.defaultParams.noSquareCrossings,
                 },
                 {
                     key = 'fasterLowGeometry',
                     name = _('FASTER_LOW_GEOMETRY'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = 1,
+                    defaultIndex = modSettings.defaultParams.fasterLowGeometry,
                 },
                 {
                     key = 'fasterTownDevelopInterval',
                     name = _('FASTER_TOWN_DEVELOP_INTERVAL'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = 1,
+                    defaultIndex = modSettings.defaultParams.fasterTownDevelopInterval,
                 },
+				{
+					key = 'simPersonDestinationRecomputationProbability',
+					name = _('DESTINATION_RECOMPUTATION_PROBABILITY'),
+					values = { '--', '-', '0', '+', '++' },
+					defaultIndex = modSettings.defaultParams.simPersonDestinationRecomputationProbability,
+				},
             },
 		},
 		runFn = function (settings, modParams)
-			modSettings.setModParamsFromRunFn(modParams[getCurrentModId()])
+			modSettings.setModParamsFromRunFn(modParams)
 
 			if modSettings.getParam('noSkyscrapers') == 1 then
 				addFileFilter('construction', filterOutSkyscrapersFunc)
@@ -171,10 +173,10 @@ function data()
 			-- addModifier('loadScript', loadScriptFunc)
 			-- addModifier('loadGameScript', loadGameScriptFunc)
 			if modSettings.getParam('noSquareCrossings') == 1 then
-				game.config.townMajorStreetAngleRange = modSettings.getValue('townMajorStreetAngleRange')
+				game.config.townMajorStreetAngleRange = 10.0 -- default is 0.0
 			end
 			if modSettings.getParam('fasterTownDevelopInterval') == 1 then
-				game.config.townDevelopInterval = modSettings.getValue('townDevelopInterval')
+				game.config.townDevelopInterval = 20.0 -- default is 60.0
 			end
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
@@ -193,8 +195,20 @@ function data()
 				end
 			end
 
-			-- print('LOLLO game.config.townDevelopInterval = ', game.config.townDevelopInterval)
-			-- print('LOLLO game.config.townMajorStreetAngleRange = ', game.config.townMajorStreetAngleRange)
+			local spdrp = modSettings.getParam('simPersonDestinationRecomputationProbability')
+			if spdrp == 0 then
+				game.config.simPersonDestinationRecomputationProbability = 0.1
+			elseif spdrp == 1 then
+				game.config.simPersonDestinationRecomputationProbability = 0.5
+			elseif spdrp == 3 then
+				game.config.simPersonDestinationRecomputationProbability = 1.5
+			elseif spdrp == 4 then
+				game.config.simPersonDestinationRecomputationProbability = 2.0
+			-- else
+			-- 	game.config.simPersonDestinationRecomputationProbability = 1.0
+			end
+
+			logger.print('LOLLO game.config = ') logger.debugPrint(game.config)
 		end,
 	}
 end

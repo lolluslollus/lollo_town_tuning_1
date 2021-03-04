@@ -34,6 +34,7 @@ return {
         ]],
 		CAPACITY_FACTOR = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
 		CONSUMPTION_FACTOR = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Only click once and wait until the game unfreezes!",
+		DESTINATION_RECOMPUTATION_PROBABILITY = "Sims likely to seek new destinations",
 		FASTER_LOW_GEOMETRY = "Faster low geometry setting",
 		FASTER_TOWN_DEVELOP_INTERVAL = "Faster town develop interval",
 		INITIAL_COM_CAPACITY = "Initial commercial capacity",
