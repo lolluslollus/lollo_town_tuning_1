@@ -12,7 +12,9 @@ return {
 		As a bonus, you get switches to:
 		- avoid new skyscrapers, 
 		- build new roads with non-square corners,
-		- limit the geometry settings to increase performance.
+		- limit the geometry settings to increase performance,
+        - develop towns more often,
+        - cut the chance that sims seek new destinations.
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
@@ -21,7 +23,7 @@ return {
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
         - Cut industry production to reasonable levels, no more 6400 units of coal
-        - Cut the industrial and commercial consumption with this mod
+        - Cut the industrial and commercial demand with this mod
         - Raise the supply effectiveness with this mod
         - Mod the steel mill to require 1 coal and 1 ore instead of 2 (not included here)
         - In the game options, set geometry to low
