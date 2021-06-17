@@ -174,6 +174,7 @@ function data()
 			-- addModifier('loadGameScript', loadGameScriptFunc)
 			if modSettings.getParam('noSquareCrossings') == 1 then
 				game.config.townMajorStreetAngleRange = 10.0 -- default is 0.0
+				game.config.townInitialMajorStreetAngleRange = 10.0 -- same but only active during first creation of a town
 			end
 			if modSettings.getParam('fasterTownDevelopInterval') == 1 then
 				game.config.townDevelopInterval = 20.0 -- default is 60.0
