@@ -18,7 +18,7 @@ return {
 		
 		As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-		NOTE: whenever you alter a parameter that affects all towns, it might take a while before the job is done because it recalculates *all* buildings, existing end future. Click one button only and wait. The game will freeze for a while.
+		NOTE: whenever you alter a parameter that affects all towns, this mod will change the properties of future buildings and recalculate *all* buildings in your map. This will take a while: click one button only and don't touch anything until the game unfreezes.
         
         PERFORMANCE TIPS:
         I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
