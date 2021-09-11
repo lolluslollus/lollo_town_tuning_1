@@ -507,11 +507,11 @@ _actions.guiAddTuningMenu = function(windowId, townId)
 
     local minSize = api.gui.util.Size.new() minSize.h = 1000 minSize.w = 800
     window:setSize(minSize)
-
+    -- require("mobdebug").start()
     local windowContent = window:getContent()
     -- remove the "editor" tab if in sandbox mode
-    if windowContent:getNumTabs() > 3 then
-        local editorTab = windowContent:getTab(3)
+    if windowContent:getNumTabs() > 4 then
+        local editorTab = windowContent:getTab(4)
         editorTab:setVisible(false, false) -- does not work
         editorTab:setEnabled(false) -- at least this works
     end
