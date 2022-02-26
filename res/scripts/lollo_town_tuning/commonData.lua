@@ -13,12 +13,12 @@ local _fileName = _currentDir .. '/commonDataTemp.lua'
 -- logger.print('file name =', _fileName)
 
 -- local _helperBuffer = nil -- LOLLO NOTE it would be nice to have this, but it won't work across states, see comments below.
-local helper = {
+local me = {
     defaultCapacityFactor = 1.0,
     defaultConsumptionFactor = 1.2,
     defaultPersonCapacityFactor = 1.0,
 }
-helper.get = function()
+me.get = function()
     -- if _helperBuffer ~= nil then -- always nil coz set in a different state (thread)
     --     logger.print('buffer in action')
     --     return _helperBuffer
@@ -27,9 +27,9 @@ helper.get = function()
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
-            capacityFactor = helper.defaultCapacityFactor,
-            consumptionFactor = helper.defaultConsumptionFactor,
-            personCapacityFactor = helper.defaultPersonCapacityFactor
+            capacityFactor = me.defaultCapacityFactor,
+            consumptionFactor = me.defaultConsumptionFactor,
+            personCapacityFactor = me.defaultPersonCapacityFactor
         }
         -- logger.print('no table found, returning defaults')
     end
@@ -38,7 +38,7 @@ helper.get = function()
     -- logger.print('returning data =') logger.debugPrint(result)
     return result
 end
-helper.set = function(newData)
+me.set = function(newData)
     if type(newData) ~= 'table' then return end
 
     local savedData = fileUtils.loadTable(_fileName)
@@ -54,4 +54,4 @@ helper.set = function(newData)
     end
 end
 
-return helper
+return me
