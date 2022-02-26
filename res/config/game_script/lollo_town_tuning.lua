@@ -2,10 +2,6 @@ local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local commonData = require('lollo_town_tuning.commonData')
 local logger = require('lollo_town_tuning.logger')
 
-local function _myErrorHandler(err)
-    print('lollo town tuning caught error: ', err)
-end
-
 -- LOLLO NOTE you can update town sizes with
 -- api.cmd.sendCommand(api.cmd.make.setTownInfo(townId, {resCapa, comCapa, indCapa}))
 -- This will not add anything to the sandbox menu
@@ -41,14 +37,10 @@ local _defaultPersonCapacityFactor = commonData.defaultPersonCapacityFactor
 
 local _eventId = '__lolloTownTuningEvent__'
 local _eventNames = {
-    -- changeCapacityFactor = 'changeCapacityFactor',
-    -- changeConsumptionFactor = 'changeConsumptionFactor',
-    -- changePersonCapacityFactor = 'changePersonCapacityFactor',
-    -- changeCargoNeeds = 'changeCargoNeeds',
     updateState = 'updateState',
 }
 
--- these 3 text fields are global so they can update when the API has run
+-- these 3 text fields are global so they can only update once the API has been loaded
 local _guiResOutput = nil -- api.gui.comp.TextView.new('')
 local _guiComOutput = nil -- api.gui.comp.TextView.new('')
 local _guiIndOutput = nil -- api.gui.comp.TextView.new('')
@@ -63,7 +55,7 @@ local state = nil
 
 local _dataHelper = {
     cargoTypes = {
-        getAll = function()
+        getAllButPassengers = function()
             local cargoNames = api.res.cargoTypeRep.getAll()
             if not(cargoNames) then return {} end
 
@@ -78,173 +70,173 @@ local _dataHelper = {
         end,
     },
     shared = {
-    get = function()
-        local result = arrayUtils.cloneDeepOmittingFields(state)
-        if type(result) ~= 'table' then
-            -- print('sharedData found no state, returning defaults')
-            result = {
-                capacityFactor = _defaultCapacityFactor,
-                consumptionFactor = _defaultConsumptionFactor,
-                personCapacityFactor = _defaultPersonCapacityFactor
-            }
-        end
-        return result
-    end,
-    getCapacityFactorIndex = function(factor)
-        if type(factor) ~= 'number' then factor = _defaultCapacityFactor end
+        get = function()
+            local result = arrayUtils.cloneDeepOmittingFields(state)
+            if type(result) ~= 'table' then
+                -- print('sharedData found no state, returning defaults')
+                result = {
+                    capacityFactor = _defaultCapacityFactor,
+                    consumptionFactor = _defaultConsumptionFactor,
+                    personCapacityFactor = _defaultPersonCapacityFactor
+                }
+            end
+            return result
+        end,
+        getCapacityFactorIndex = function(factor)
+            if type(factor) ~= 'number' then factor = _defaultCapacityFactor end
 
-        local result = 4
-        if factor <= 0.1 then
-            result = 1
-        elseif factor == 0.25 then
-            result = 2
-        elseif factor == 0.5 then
-            result = 3
-        elseif factor == 1.5 then
-            result = 5
-        elseif factor >= 2 then
-            result = 6
-        end
+            local result = 4
+            if factor <= 0.1 then
+                result = 1
+            elseif factor == 0.25 then
+                result = 2
+            elseif factor == 0.5 then
+                result = 3
+            elseif factor == 1.5 then
+                result = 5
+            elseif factor >= 2 then
+                result = 6
+            end
 
-        return result
-    end,
-    setCapacityFactor = function(index)
-        if type(index) ~= 'number' then return false end
+            return result
+        end,
+        setCapacityFactor = function(index)
+            if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.capacityFactor) ~= 'number' then
-            newCommon.capacityFactor = _defaultCapacityFactor
-        end
+            local newCommon = arrayUtils.cloneDeepOmittingFields(state)
+            if type(newCommon.capacityFactor) ~= 'number' then
+                newCommon.capacityFactor = _defaultCapacityFactor
+            end
 
-        local newFactor = _defaultCapacityFactor
-        if index <= 1 then
-            newFactor = 0.1
-        elseif index == 2 then
-            newFactor = 0.25
-        elseif index == 3 then
-            newFactor = 0.5
-        elseif index == 5 then
-            newFactor = 1.5
-        elseif index >= 6 then
-            newFactor = 2.0
-        end
+            local newFactor = _defaultCapacityFactor
+            if index <= 1 then
+                newFactor = 0.1
+            elseif index == 2 then
+                newFactor = 0.25
+            elseif index == 3 then
+                newFactor = 0.5
+            elseif index == 5 then
+                newFactor = 1.5
+            elseif index >= 6 then
+                newFactor = 2.0
+            end
 
-        if newFactor == newCommon.capacityFactor then return false end
+            if newFactor == newCommon.capacityFactor then return false end
 
-        newCommon.capacityFactor = newFactor
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
-        ))
+            newCommon.capacityFactor = newFactor
+            api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newCommon)
+            ))
 
-        return true
-    end,
-    getConsumptionFactorIndex = function(factor)
-        if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
+            return true
+        end,
+        getConsumptionFactorIndex = function(factor)
+            if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
 
-        local result = 3
-        if factor <= 0.3 then
-            result = 1
-        elseif factor == 0.6 then
-            result = 2
-        elseif factor == 1.8 then
-            result = 4
-        elseif factor == 2.4 then
-            result = 5
-        elseif factor >= 3.0 then
-            result = 6
-        end
+            local result = 3
+            if factor <= 0.3 then
+                result = 1
+            elseif factor == 0.6 then
+                result = 2
+            elseif factor == 1.8 then
+                result = 4
+            elseif factor == 2.4 then
+                result = 5
+            elseif factor >= 3.0 then
+                result = 6
+            end
 
-        return result
-    end,
-    setConsumptionFactor = function(index)
-        if type(index) ~= 'number' then return false end
+            return result
+        end,
+        setConsumptionFactor = function(index)
+            if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.consumptionFactor) ~= 'number' then
-            newCommon.consumptionFactor = _defaultConsumptionFactor
-        end
+            local newCommon = arrayUtils.cloneDeepOmittingFields(state)
+            if type(newCommon.consumptionFactor) ~= 'number' then
+                newCommon.consumptionFactor = _defaultConsumptionFactor
+            end
 
-        local newFactor = _defaultConsumptionFactor
-        if index <= 1 then
-            newFactor = 0.3
-        elseif index == 2 then
-            newFactor = 0.6
-        elseif index == 4 then
-            newFactor = 1.8
-        elseif index == 5 then
-            newFactor = 2.4
-        elseif index >= 6 then
-            newFactor = 4.8
-        end
+            local newFactor = _defaultConsumptionFactor
+            if index <= 1 then
+                newFactor = 0.3
+            elseif index == 2 then
+                newFactor = 0.6
+            elseif index == 4 then
+                newFactor = 1.8
+            elseif index == 5 then
+                newFactor = 2.4
+            elseif index >= 6 then
+                newFactor = 4.8
+            end
 
-        if newFactor == newCommon.consumptionFactor then return false end
+            if newFactor == newCommon.consumptionFactor then return false end
 
-        newCommon.consumptionFactor = newFactor
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
-        ))
+            newCommon.consumptionFactor = newFactor
+            api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newCommon)
+            ))
 
-        return true
-    end,
-    getPersonCapacityFactorIndex = function(factor)
-        if type(factor) ~= 'number' then
-            factor = _defaultPersonCapacityFactor
-        end
+            return true
+        end,
+        getPersonCapacityFactorIndex = function(factor)
+            if type(factor) ~= 'number' then
+                factor = _defaultPersonCapacityFactor
+            end
 
-        local result = 4
-        if factor <= 0.1 then
-            result = 1
-        elseif factor == 0.25 then
-            result = 2
-        elseif factor == 0.5 then
-            result = 3
-        elseif factor == 1.5 then
-            result = 5
-        elseif factor >= 2.0 then
-            result = 6
-        end
+            local result = 4
+            if factor <= 0.1 then
+                result = 1
+            elseif factor == 0.25 then
+                result = 2
+            elseif factor == 0.5 then
+                result = 3
+            elseif factor == 1.5 then
+                result = 5
+            elseif factor >= 2.0 then
+                result = 6
+            end
 
-        return result
-    end,
-    setPersonCapacityFactor = function(index)
-        if type(index) ~= 'number' then return false end
+            return result
+        end,
+        setPersonCapacityFactor = function(index)
+            if type(index) ~= 'number' then return false end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.personCapacityFactor) ~= 'number' then
-            newCommon.personCapacityFactor = _defaultPersonCapacityFactor
-        end
+            local newCommon = arrayUtils.cloneDeepOmittingFields(state)
+            if type(newCommon.personCapacityFactor) ~= 'number' then
+                newCommon.personCapacityFactor = _defaultPersonCapacityFactor
+            end
 
-        local newFactor = _defaultPersonCapacityFactor
-        if index <= 1 then
-            newFactor = 0.1
-        elseif index == 2 then
-            newFactor = 0.25
-        elseif index == 3 then
-            newFactor = 0.5
-        elseif index == 5 then
-            newFactor = 1.5
-        elseif index >= 6 then
-            newFactor = 2.0
-        end
+            local newFactor = _defaultPersonCapacityFactor
+            if index <= 1 then
+                newFactor = 0.1
+            elseif index == 2 then
+                newFactor = 0.25
+            elseif index == 3 then
+                newFactor = 0.5
+            elseif index == 5 then
+                newFactor = 1.5
+            elseif index >= 6 then
+                newFactor = 2.0
+            end
 
-        if newFactor == newCommon.personCapacityFactor then return false end
+            if newFactor == newCommon.personCapacityFactor then return false end
 
-        newCommon.personCapacityFactor = newFactor
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
-        ))
+            newCommon.personCapacityFactor = newFactor
+            api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newCommon)
+            ))
 
-        return true
-    end,
+            return true
+        end,
     },
     towns = {
         get = function()
@@ -356,7 +348,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
     parentLayout:addItem(_addInitialLandUseCapacities())
 
     local _addRequirements = function()
-        local cargoTypes = _dataHelper.cargoTypes.getAll()
+        local cargoTypes = _dataHelper.cargoTypes.getAllButPassengers()
         local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
         cargoTypesGuiTable:setNumCols(3)
         cargoTypesGuiTable:addRow({
@@ -597,21 +589,19 @@ function data()
             -- temp.view.entity_21550 will be the id of the temp town stats window.
             -- If you open the town stats menu, select won't fire.
             -- In both cases, idAdded will fire instead.
-            if type(id) == 'string' then
-                xpcall(
-                    function()
-                        if name == 'idAdded' and id:find('temp.view.entity_') then
-                            for townId, townData in pairs(_dataHelper.towns.get()) do
-                                if townData.townStatWindowId == id then
-                                    _actions.guiAddTuningMenu(id, townId)
-                                    break
-                                end
-                            end
+            if name ~= 'idAdded' or type(id) ~= 'string' or not(id:find('temp.view.entity_')) then return end
+
+            xpcall(
+                function()
+                    for townId, townData in pairs(_dataHelper.towns.get()) do
+                        if townData.townStatWindowId == id then
+                            _actions.guiAddTuningMenu(id, townId)
+                            break
                         end
-                    end,
-                    _myErrorHandler
-                )
-            end
+                    end
+                end,
+                logger.xpErrorHandler
+            )
         end,
         -- guiInit = function()
         -- fires once on start, it seems to fire after the worker thread fired save()
@@ -623,20 +613,20 @@ function data()
         handleEvent = function(src, id, name, params)
             -- if src == 'guidesystem.lua' then return end
             -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
-            if id == _eventId then
-                if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
-                    commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
-                    state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
-                    -- print('state updated, new state =')
-                    -- debugPrint(state)
+            if id ~= _eventId then return end
 
-                    -- logger.print('timer =', os.time())
-                    for townId_, _ in pairs(_dataHelper.towns.get()) do
-                        _actions.triggerUpdateTown(townId_)
-                    end
-                    logger.print('update triggered for all towns')
-                    -- logger.print('timer now =', os.time()) nearly instant or useless
+            if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
+                commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
+                state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
+                -- print('state updated, new state =')
+                -- debugPrint(state)
+
+                -- logger.print('timer =', os.time())
+                for townId_, _ in pairs(_dataHelper.towns.get()) do
+                    _actions.triggerUpdateTown(townId_)
                 end
+                logger.print('update triggered for all towns')
+                -- logger.print('timer now =', os.time()) nearly instant or useless
             end
         end,
         load = function(loadedState)
@@ -644,10 +634,11 @@ function data()
             -- note that the state can only be changed in the worker thread.
             if loadedState then
                 -- logger.print('script.load firing, loadedState is') logger.debugPrint(loadedState)
-                state = {}
-                state.capacityFactor = loadedState.capacityFactor or _defaultCapacityFactor
-                state.consumptionFactor = loadedState.consumptionFactor or _defaultConsumptionFactor
-                state.personCapacityFactor = loadedState.personCapacityFactor or _defaultPersonCapacityFactor
+                state = {
+                    capacityFactor = loadedState.capacityFactor or _defaultCapacityFactor,
+                    consumptionFactor = loadedState.consumptionFactor or _defaultConsumptionFactor,
+                    personCapacityFactor = loadedState.personCapacityFactor or _defaultPersonCapacityFactor,
+                }
             else
                 -- logger.print('script.load firing, loadedState is NIL, api.gui is', not(api.gui) and 'NIL' or 'AVAILABLE')
                 state = {

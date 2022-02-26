@@ -8,7 +8,7 @@ function data()
 		-- alter properties of all buildings in all towns
 		-- this fires for every instance of a building, but it does not contain instance-specific data,
 		-- such as the building town or location.
-		if not(data) or (data.type ~= 'TOWN_BUILDING') or type(data.updateFn) ~= 'function' then return data end
+		if not(data) or (data.type ~= 'TOWN_BUILDING') or (type(data.updateFn) ~= 'function') then return data end
 
 		-- LOLLO TODO do we need this?
 		if type(data.upgradeFn) ~= 'function' then
@@ -99,7 +99,7 @@ function data()
 	-- end
 
 	local filterOutSkyscrapersFunc = function(fileName, data)
-		if data.type == 'TOWN_BUILDING' then
+		if data and data.type == 'TOWN_BUILDING' then
 			if data.townBuildingParams
 			and data.townBuildingParams.level == 4
 			and (data.townBuildingParams.landUseType == 'RESIDENTIAL'
