@@ -24,6 +24,7 @@ me.get = function()
     --     return _helperBuffer
     -- end
 
+    -- print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
