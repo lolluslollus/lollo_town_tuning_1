@@ -26,7 +26,7 @@ results.defaultParams = {
 results.getParam = function(fieldName)
     local modSettings = _getModSettings1() or _getModSettings2()
     if not(modSettings) then
-        print('WARNING: lollo town tuning cannot read modSettings')
+        logger.warn('cannot read modSettings')
         return nil
     end
 

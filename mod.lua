@@ -104,7 +104,7 @@ function data()
 			and data.townBuildingParams.level == 4
 			and (data.townBuildingParams.landUseType == 'RESIDENTIAL'
 				or data.townBuildingParams.landUseType == 'COMMERCIAL') then
-				-- print('LOLLO filtering out filename = ', fileName, 'level = ', data.townBuildingParams.level)
+				-- logger.print('LOLLO filtering out filename = ', fileName, 'level = ', data.townBuildingParams.level)
 				-- LOLLO NOTE removing level 1 buildings leads to crash:
 				-- c:\build\tpf2_steam\src\game\procedural\buildingtyperep.cpp:63:
 				-- class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > __cdecl `anonymous-namespace'::GetCandidates(const class std::unordered_map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct BuildingType,struct std::hash<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > >,struct std::equal_to<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > >,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,struct BuildingType> > > &,const class ConstructionRep *,enum LandUseType,int,int): Assertion `false' failed.

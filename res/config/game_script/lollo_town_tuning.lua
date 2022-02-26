@@ -73,7 +73,7 @@ local _dataHelper = {
         get = function()
             local result = arrayUtils.cloneDeepOmittingFields(state)
             if type(result) ~= 'table' then
-                -- print('sharedData found no state, returning defaults')
+                -- logger.print('sharedData found no state, returning defaults')
                 result = {
                     capacityFactor = _defaultCapacityFactor,
                     consumptionFactor = _defaultConsumptionFactor,
@@ -276,7 +276,7 @@ local _utils = {
         -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
         -- local newCargoNeeds = oldCargoNeeds
         -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-        --     print(cargoTypeId, cargoSupply)
+        --     logger.print(cargoTypeId, cargoSupply)
         -- end
 
         -- res, com, ind
@@ -612,14 +612,14 @@ function data()
         -- end,
         handleEvent = function(src, id, name, params)
             -- if src == 'guidesystem.lua' then return end
-            -- print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
+            -- logger.print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
             if id ~= _eventId then return end
 
             if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
                 commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
                 state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
-                -- print('state updated, new state =')
-                -- debugPrint(state)
+                -- logger.print('state updated, new state =')
+                -- logger.debugPrint(state)
 
                 -- logger.print('timer =', os.time())
                 for townId_, _ in pairs(_dataHelper.towns.get()) do
@@ -666,7 +666,7 @@ function data()
         end,
         -- update = function()
         --     -- fires at intervals in the worker thread
-        --     print('script.update')
+        --     logger.print('script.update')
         -- end,
     }
 end
