@@ -3,7 +3,7 @@
 -- Whenever a game loads or the user changes some data, the temp file is updated.
 -- Whenever construction.TOWN_BUILDING.updateFn() fires, it will read their latest version of it.
 
-local arrayUtils = require('lollo_town_tuning.arrayUtils')
+-- local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local fileUtils = require('lollo_town_tuning.fileUtils')
 local logger = require('lollo_town_tuning.logger')
 
