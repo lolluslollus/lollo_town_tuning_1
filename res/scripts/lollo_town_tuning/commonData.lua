@@ -3,7 +3,7 @@
 -- Whenever a game loads or the user changes some data, the temp file is updated.
 -- Whenever construction.TOWN_BUILDING.updateFn() fires, it will read their latest version of it.
 
--- local arrayUtils = require('lollo_town_tuning.arrayUtils')
+local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local fileUtils = require('lollo_town_tuning.fileUtils')
 local logger = require('lollo_town_tuning.logger')
 
@@ -23,6 +23,8 @@ me.get = function()
     --     logger.print('buffer in action')
     --     return _helperBuffer
     -- end
+
+    print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
 
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
@@ -50,6 +52,7 @@ me.set = function(newData)
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
         -- _G.lollo_town_tuning = { commonData = newData } -- NO!
+        _G.lollo_town_tuning = { commonData = arrayUtils.cloneDeepOmittingFields(newData) }
         fileUtils.saveTable(newData, _fileName)
     end
 end
