@@ -25,6 +25,7 @@ me.get = function()
     -- end
 
     -- print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
+    print('LOLLO_TOWN_TUNING =') debugPrint(LOLLO_TOWN_TUNING) -- LOLLO TODO see if this works
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
@@ -48,6 +49,9 @@ me.set = function(newData)
     or savedData.consumptionFactor ~= newData.consumptionFactor
     or savedData.personCapacityFactor ~= newData.personCapacityFactor
     then
+        LOLLO_TOWN_TUNING.capacityFactor = newData.capacityFactor -- LOLLO TODO see if this works
+        LOLLO_TOWN_TUNING.consumptionFactor = newData.consumptionFactor
+        LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
         -- _G.lollo_town_tuning = { commonData = newData } -- the game disallows this in init.lua

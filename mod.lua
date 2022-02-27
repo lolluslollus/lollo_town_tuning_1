@@ -162,6 +162,12 @@ function data()
             },
 		},
 		runFn = function (settings, modParams)
+            LOLLO_TOWN_TUNING = {
+                capacityFactor = commonData.defaultCapacityFactor,
+                consumptionFactor = commonData.defaultConsumptionFactor,
+                personCapacityFactor = commonData.defaultPersonCapacityFactor,
+            } -- init global var LOLLO TODO see if this works
+
 			modSettings.setModParamsFromRunFn(modParams)
 
 			if modSettings.getParam('noSkyscrapers') == 1 then
