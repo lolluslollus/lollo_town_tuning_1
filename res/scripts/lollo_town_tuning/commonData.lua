@@ -24,7 +24,9 @@ me.get = function()
     --     return _helperBuffer
     -- end
 
-    -- print('getting _G.LOLLO_TOWN_TUNING =') debugPrint(_G.LOLLO_TOWN_TUNING) -- this works but it won't be shared across states
+    -- print('getting game.LOLLO_TOWN_TUNING =') debugPrint(game.LOLLO_TOWN_TUNING) -- not shared across states
+    -- print('getting game.config.LOLLO_TOWN_TUNING =') debugPrint(game.config.LOLLO_TOWN_TUNING) -- not shared across states
+    -- print('getting _G.LOLLO_TOWN_TUNING =') debugPrint(_G.LOLLO_TOWN_TUNING) -- not shared across states
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
@@ -48,10 +50,11 @@ me.set = function(newData)
     or savedData.consumptionFactor ~= newData.consumptionFactor
     or savedData.personCapacityFactor ~= newData.personCapacityFactor
     then
-        -- _G.LOLLO_TOWN_TUNING.capacityFactor = newData.capacityFactor
+        -- game.LOLLO_TOWN_TUNING = newData -- not shared across states
+        -- game.config.LOLLO_TOWN_TUNING = newData -- not shared across states
+        -- _G.LOLLO_TOWN_TUNING.capacityFactor = newData.capacityFactor -- not shared across states
         -- _G.LOLLO_TOWN_TUNING.consumptionFactor = newData.consumptionFactor
         -- _G.LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
-        -- print('setting _G.LOLLO_TOWN_TUNING =') debugPrint(_G.LOLLO_TOWN_TUNING) -- this works but it won't be shared across states
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
         fileUtils.saveTable(newData, _fileName)
