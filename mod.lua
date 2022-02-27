@@ -162,11 +162,14 @@ function data()
             },
 		},
 		runFn = function (settings, modParams)
-            -- LOLLO_TOWN_TUNING = {
+			-- the game disallows global variables in init.lua
+			-- unless I initialise them in runFn
+			-- and it does not share them across states anyway
+            -- _G.LOLLO_TOWN_TUNING = {
             --     capacityFactor = commonData.defaultCapacityFactor,
             --     consumptionFactor = commonData.defaultConsumptionFactor,
             --     personCapacityFactor = commonData.defaultPersonCapacityFactor,
-            -- } -- init global var -- this works but it won't be shared across states
+            -- } -- init global var
 
 			modSettings.setModParamsFromRunFn(modParams)
 
