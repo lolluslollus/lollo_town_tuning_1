@@ -162,11 +162,11 @@ function data()
             },
 		},
 		runFn = function (settings, modParams)
-            LOLLO_TOWN_TUNING = {
-                capacityFactor = commonData.defaultCapacityFactor,
-                consumptionFactor = commonData.defaultConsumptionFactor,
-                personCapacityFactor = commonData.defaultPersonCapacityFactor,
-            } -- init global var LOLLO TODO see if this works
+            -- LOLLO_TOWN_TUNING = {
+            --     capacityFactor = commonData.defaultCapacityFactor,
+            --     consumptionFactor = commonData.defaultConsumptionFactor,
+            --     personCapacityFactor = commonData.defaultPersonCapacityFactor,
+            -- } -- init global var -- this works but it won't be shared across states
 
 			modSettings.setModParamsFromRunFn(modParams)
 

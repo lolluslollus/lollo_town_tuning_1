@@ -25,7 +25,7 @@ me.get = function()
     -- end
 
     -- print('_G.lollo_town_tuning =') debugPrint(_G.lollo_town_tuning)
-    print('LOLLO_TOWN_TUNING =') debugPrint(LOLLO_TOWN_TUNING) -- LOLLO TODO see if this works
+    -- print('getting LOLLO_TOWN_TUNING =') debugPrint(LOLLO_TOWN_TUNING) -- this works but it won't be shared across states
     local result = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
@@ -49,12 +49,14 @@ me.set = function(newData)
     or savedData.consumptionFactor ~= newData.consumptionFactor
     or savedData.personCapacityFactor ~= newData.personCapacityFactor
     then
-        LOLLO_TOWN_TUNING.capacityFactor = newData.capacityFactor -- LOLLO TODO see if this works
-        LOLLO_TOWN_TUNING.consumptionFactor = newData.consumptionFactor
-        LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
+        -- LOLLO_TOWN_TUNING.capacityFactor = newData.capacityFactor
+        -- LOLLO_TOWN_TUNING.consumptionFactor = newData.consumptionFactor
+        -- LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
+        -- print('setting LOLLO_TOWN_TUNING =') debugPrint(LOLLO_TOWN_TUNING) -- this works but it won't be shared across states
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         logger.print('saving table, data =') -- logger.debugPrint(newData)
         -- _G.lollo_town_tuning = { commonData = newData } -- the game disallows this in init.lua
+        -- unless I initialise it in runFn
         -- and it does not cross states anyway
         fileUtils.saveTable(newData, _fileName)
     end
