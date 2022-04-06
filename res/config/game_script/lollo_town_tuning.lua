@@ -513,7 +513,7 @@ _actions.guiAddTuningMenu = function(windowId, townId)
     windowContent:insertTab(
         api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
         tuningTab,
-        3
+        4
     )
     local tuningLayout = tuningTab:getLayout()
     _actions.guiAddAllTownProps(tuningLayout)
