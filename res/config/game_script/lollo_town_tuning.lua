@@ -272,15 +272,57 @@ local _utils = {
 
         local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
         if not(townData) then return nil end
+        local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+        if not(cargoSupplyAndLimit) then return nil end
 
-        -- local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-        -- local newCargoNeeds = oldCargoNeeds
-        -- for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-        --     logger.print(cargoTypeId, cargoSupply)
-        -- end
+        -- LOLLO NOTE since build 35045, townData.cargoNeeds contains 3 com and 3 ind,
+        -- even if they are not in use.
+        -- As a consequence, we cannot simply return townData.cargoNeeds anymore.
+        -- To fix this, we match cargo needs to cargo in use.
+        --[[
+            cargoSupplyAndLimit = {
+                [11] = 0,
+                [14] = 0,
+            }
+        ]]
+        local usedCargoIdsIndexed = {}
+        for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+            logger.print(cargoTypeId, cargoSupply)
+            usedCargoIdsIndexed[cargoTypeId] = true
+        end
 
-        -- res, com, ind
-        return townData.cargoNeeds
+        --[[
+            cargoNeeds = {
+                [1] = {
+                },
+                [2] = {
+                    [1] = 14,
+                    [2] = 15,
+                    [3] = 16,
+                },
+                [3] = {
+                    [1] = 11,
+                    [2] = 12,
+                    [3] = 13,
+                },
+            },
+        ]]
+        local newCargoNeeds = {
+            {},
+            {},
+            {},
+        }
+        for resComInd, needs in pairs(townData.cargoNeeds) do
+            -- resComInd is 1 for res, 2 for com, 3 for ind
+            for _, need in pairs(needs) do
+                if usedCargoIdsIndexed[need] then
+                    table.insert(newCargoNeeds[resComInd], need)
+                end
+            end
+        end
+
+        logger.print('newCargoNeeds =') logger.debugPrint(newCargoNeeds)
+        return newCargoNeeds
     end
 }
 local _actions = {}
@@ -289,7 +331,10 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
     logger.print('townId =', townId or 'NIL')
 
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    logger.print('townData =') logger.debugPrint(townData or 'NIL')
     if not(townData) then return end
+
+    local townCargoNeeds = _utils.getCargoNeeds(townId)
 
     local _addInitialLandUseCapacities = function()
         local _getField = function(resComInd)
@@ -349,6 +394,8 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
 
     local _addRequirements = function()
         local cargoTypes = _dataHelper.cargoTypes.getAllButPassengers()
+        -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
+
         local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
         cargoTypesGuiTable:setNumCols(3)
         cargoTypesGuiTable:addRow({
@@ -356,56 +403,58 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             api.gui.comp.TextView.new(_areaTypes.com.text),
             api.gui.comp.TextView.new(_areaTypes.ind.text)
         })
-        for cargoTypeId, cargoData in pairs(cargoTypes) do
-            local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
-            resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-            resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
-            local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-            resCheckBox:onToggle(
-                function(newValue)
-                    cargoTypesGuiTable:setEnabled(false)
-                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
-                    cargoTypesGuiTable:setEnabled(true)
+        if townCargoNeeds ~= nil then
+            for cargoTypeId, cargoData in pairs(cargoTypes) do
+                local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
+                resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
+                local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                resCheckBox:onToggle(
+                    function(newValue)
+                        cargoTypesGuiTable:setEnabled(false)
+                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
+                        cargoTypesGuiTable:setEnabled(true)
+                    end
+                )
+                for _, v in pairs(townCargoNeeds[1]) do
+                    if v == cargoTypeId then resCheckBox:setSelected(true, false) end
                 end
-            )
-            for _, v in pairs(townData.cargoNeeds[1]) do
-                if v == cargoTypeId then resCheckBox:setSelected(true, false) end
-            end
-            resComp:getLayout():addItem(resCheckBox)
+                resComp:getLayout():addItem(resCheckBox)
 
-            local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
-            comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-            comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-            local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-            comCheckBox:onToggle(
-                function(newValue)
-                    cargoTypesGuiTable:setEnabled(false)
-                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
-                    cargoTypesGuiTable:setEnabled(true)
+                local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
+                comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                comCheckBox:onToggle(
+                    function(newValue)
+                        cargoTypesGuiTable:setEnabled(false)
+                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
+                        cargoTypesGuiTable:setEnabled(true)
+                    end
+                )
+                for _, v in pairs(townCargoNeeds[2]) do
+                    if v == cargoTypeId then comCheckBox:setSelected(true, false) end
                 end
-            )
-            for _, v in pairs(townData.cargoNeeds[2]) do
-                if v == cargoTypeId then comCheckBox:setSelected(true, false) end
-            end
-            comComp:getLayout():addItem(comCheckBox)
+                comComp:getLayout():addItem(comCheckBox)
 
-            local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
-            indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-            indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-            local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-            indCheckBox:onToggle(
-                function(newValue)
-                    cargoTypesGuiTable:setEnabled(false)
-                    _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
-                    cargoTypesGuiTable:setEnabled(true)
+                local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
+                indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                indCheckBox:onToggle(
+                    function(newValue)
+                        cargoTypesGuiTable:setEnabled(false)
+                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
+                        cargoTypesGuiTable:setEnabled(true)
+                    end
+                )
+                for _, v in pairs(townCargoNeeds[3]) do
+                    if v == cargoTypeId then indCheckBox:setSelected(true, false) end
                 end
-            )
-            for _, v in pairs(townData.cargoNeeds[3]) do
-                if v == cargoTypeId then indCheckBox:setSelected(true, false) end
-            end
-            indComp:getLayout():addItem(indCheckBox)
+                indComp:getLayout():addItem(indCheckBox)
 
-            cargoTypesGuiTable:addRow({resComp, comComp, indComp})
+                cargoTypesGuiTable:addRow({resComp, comComp, indComp})
+            end
         end
         return cargoTypesGuiTable
     end
@@ -529,33 +578,33 @@ _actions.guiAddTuningMenu = function(windowId, townId)
 end
 
 _actions.triggerUpdateTown = function(townId)
-    local cargoNeeds = _utils.getCargoNeeds(townId)
-    if not(cargoNeeds) then return end
+    local townCargoNeeds = _utils.getCargoNeeds(townId)
+    if townCargoNeeds == nil then return end
 
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
-        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds)
     )
 end
 
 _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
-    local cargoNeeds = _utils.getCargoNeeds(townId)
-    if not(cargoNeeds) then return end
+    local townCargoNeeds = _utils.getCargoNeeds(townId)
+    if townCargoNeeds == nil then return end
 
     if newValue then
-        if not(arrayUtils.arrayHasValue(cargoNeeds[areaTypeIndex], cargoTypeId)) then
-            cargoNeeds[areaTypeIndex][#cargoNeeds[areaTypeIndex] + 1] = cargoTypeId
+        if not(arrayUtils.arrayHasValue(townCargoNeeds[areaTypeIndex], cargoTypeId)) then
+            townCargoNeeds[areaTypeIndex][#townCargoNeeds[areaTypeIndex] + 1] = cargoTypeId
         end
     else
-        local index = _utils.findIndex(cargoNeeds[areaTypeIndex], cargoTypeId)
+        local index = _utils.findIndex(townCargoNeeds[areaTypeIndex], cargoTypeId)
         if index > -1 then
-            cargoNeeds[areaTypeIndex][index] = nil
+            townCargoNeeds[areaTypeIndex][index] = nil
         end
     end
 
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
-        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, cargoNeeds)
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds)
     )
 end
 
