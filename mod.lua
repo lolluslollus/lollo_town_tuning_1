@@ -21,7 +21,7 @@ function data()
 			if not(result) then return result end
 
 			if logger.getIsExtendedLog() then
-				local _testBuildingFileNameSegment = 'era_b/com_1_4x4_04.con'
+				local _testBuildingFileNameSegment = 'era_b/com_1_1x2_02.con' -- 'era_b/com_1_4x4_04.con'
 
 				-- local sampleResult = {
 				-- 	personCapacity = {
@@ -39,12 +39,10 @@ function data()
 				-- }
 
 				-- logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
-				if fileName:find('era_b/com_1_1x2_02.con') then
-					if fileName:find(_testBuildingFileNameSegment) then
-						print('result =') debugPrint(result)
-						print('data =') debugPrint(data)
-						print('params =') debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
-					end
+				if fileName:find(_testBuildingFileNameSegment) then
+					print('result =') debugPrint(result)
+					print('data =') debugPrint(data)
+					print('params =') debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
 				end
 			end
 
