@@ -129,13 +129,23 @@ arrayUtils.sort = function(table0, elementName, asc)
 end
 
 arrayUtils.findIndex = function(tab, fieldName, fieldValueNonNil)
-    if type(tab) ~= 'table' or type(fieldName) ~= 'string' or string.len(fieldName) < 1 or fieldValueNonNil == nil then return -1 end
+    if type(tab) ~= 'table' or fieldValueNonNil == nil then return -1 end
 
-    for i = 1, #tab do
-        if type(tab[i]) == 'table' and tab[i][fieldName] == fieldValueNonNil then
-            -- print('LOLLO findIndex found index =', i, 'tab[i][fieldName] =', tab[i][fieldName], 'fieldValueNonNil =', fieldValueNonNil, 'content =')
-            -- debugPrint(tab[i])
-            return i
+    if type(fieldName) == 'string' then
+        if string.len(fieldName) > 0 then
+            for i = 1, #tab do
+                if type(tab[i]) == 'table' and tab[i][fieldName] == fieldValueNonNil then
+                    -- print('LOLLO findIndex found index =', i, 'tab[i][fieldName] =', tab[i][fieldName], 'fieldValueNonNil =', fieldValueNonNil, 'content =')
+                    -- debugPrint(tab[i])
+                    return i
+                end
+            end
+        end
+    else
+        for i = 1, #tab do
+            if tab[i] == fieldValueNonNil then
+                return i
+            end
         end
     end
 
