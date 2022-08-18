@@ -44,6 +44,7 @@ return {
 		INITIAL_RES_CAPACITY = "Initial residential capacity",
 		NO_SKYSCRAPERS = "Bar commercial and residential skyscrapers (only applies to new buildings)",
 		NO_SQUARE_CROSSINGS = "AI streets cross at various corners",
+		OLD_BUILDINGS_IN_NEW_ERAS = "Older eras AI buildings can be built in newer eras",
 		PERSON_CAPACITY_FACTOR = "Person capacity factor, affects all buildings in all towns. Only click once and wait until the game unfreezes!",
 		TUNING_TAB_LABEL = "Tuning"
 	},

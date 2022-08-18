@@ -56,7 +56,7 @@ me.set = function(newData)
         -- _G.LOLLO_TOWN_TUNING.consumptionFactor = newData.consumptionFactor
         -- _G.LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
-        logger.print('saving table, data =') -- logger.debugPrint(newData)
+        -- logger.print('saving table, data =') -- logger.debugPrint(newData)
         fileUtils.saveTable(newData, _fileName)
     end
 end

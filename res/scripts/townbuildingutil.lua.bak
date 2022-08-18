@@ -62,7 +62,7 @@ function townbuildingutil.make_building2_ext(buildingFace, availability, townBui
 			result.groundFaces = {}
 			
 			local allLayouts = {}
-			for k,v in pairs(modelData) do
+			for k,v in orderedPairs(modelData) do
 				if k == "base" then
 					constructionutil.addModelsAndGroups(params, v, result, "base")
 					addScaffolds(v, result)
@@ -92,7 +92,6 @@ function townbuildingutil.make_building2_ext(buildingFace, availability, townBui
 				end
 				model.transf = transf.mul(transf.transl({ x = 0, y = 0, z = math.lerp(p1[3], p2[3], (alignmentPos[1] - p1[1]) / dx) }), model.transf)
 			end
-			
 
 			
 			if params.parcelFace == nil then
@@ -429,7 +428,7 @@ function townbuildingutil.make_material_lod_1_metallic(map_albedo_fn, map_metal_
 				units = 0,			
 			},
 			map_op_1 = {
-				fileName = "buildings/dirtmap.tga",
+				fileName = "buildings/dirtmap.dds",
 				magFilter = "LINEAR",
 				minFilter = "LINEAR_MIPMAP_LINEAR",
 			},
@@ -437,6 +436,7 @@ function townbuildingutil.make_material_lod_1_metallic(map_albedo_fn, map_metal_
 				fileName = "buildings/overlay.tga",
 				magFilter = "LINEAR",
 				minFilter = "LINEAR_MIPMAP_LINEAR",
+				compressionAllowed = false,
 			},
 			operation_1 = {
 				op = "LINEAR_BURN",

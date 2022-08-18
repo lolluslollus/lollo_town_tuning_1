@@ -20,6 +20,7 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 
+--[[ 			
 			if logger.getIsExtendedLog() then
 				local _testBuildingFileNameSegment = 'era_b/com_1_1x2_02.con' -- 'era_b/com_1_4x4_04.con'
 
@@ -38,13 +39,14 @@ function data()
 				-- 	},
 				-- }
 
-				-- logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
+				logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
 				if fileName:find(_testBuildingFileNameSegment) then
-					print('result =') debugPrint(result)
-					print('data =') debugPrint(data)
-					print('params =') debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
+					logger.print('result =') logger.debugPrint(result)
+					logger.print('data =') logger.debugPrint(data)
+					logger.print('params =') logger.debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
 				end
 			end
+]]
 
 			local common = commonData.get()
 			if result.rule then
@@ -114,7 +116,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 8,
+			minorVersion = 9,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('NAME'),
@@ -132,6 +134,12 @@ function data()
                     name = _('NO_SKYSCRAPERS'),
                     values = { _('No'), _('Yes'), },
                     defaultIndex = modSettings.defaultParams.noSkyscrapers,
+                },
+				{
+                    key = 'oldBuildingsInNewEras',
+                    name = _('OLD_BUILDINGS_IN_NEW_ERAS'),
+                    values = { _('No'), _('Yes'), },
+                    defaultIndex = modSettings.defaultParams.oldBuildingsInNewEras,
                 },
                 {
                     key = 'noSquareCrossings',
@@ -179,6 +187,9 @@ function data()
 			-- addModifier('loadConstructionMenu', loadConstructionMenuFunc)
 			-- addModifier('loadScript', loadScriptFunc)
 			-- addModifier('loadGameScript', loadGameScriptFunc)
+			if modSettings.getParam('oldBuildingsInNewEras') == 1 then
+				local dummy = require('lollo_town_tuning.townBuildingUtilOverload')
+			end
 			if modSettings.getParam('noSquareCrossings') == 1 then
 				game.config.townMajorStreetAngleRange = 10.0 -- default is 0.0
 				game.config.townInitialMajorStreetAngleRange = 10.0 -- same but only active during first creation of a town

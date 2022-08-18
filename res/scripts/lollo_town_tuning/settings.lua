@@ -20,6 +20,7 @@ results.defaultParams = {
     fasterTownDevelopInterval = 1,
     noSkyscrapers = 1,
     noSquareCrossings = 1,
+    oldBuildingsInNewEras = 0,
     simPersonDestinationRecomputationProbability = 2,
 }
 
@@ -38,32 +39,39 @@ results.setModParamsFromRunFn = function(modParams)
     -- so thisModParams here will be nil
     -- In this case, we assign the default values.
     if type(game) ~= 'table' or type(game.config) ~= 'table' or modParams == nil then return end
+
     local thisModParams = modParams[getCurrentModId()]
 
     if type(game.config._lolloTownTuning) ~= 'table' then
         game.config._lolloTownTuning = {}
     end
 
-	if type(thisModParams) == 'table' and thisModParams.fasterLowGeometry == 0 then
-        game.config._lolloTownTuning.fasterLowGeometry = 0
+	if type(thisModParams) == 'table' and type(thisModParams.fasterLowGeometry) == 'number' then
+        game.config._lolloTownTuning.fasterLowGeometry = thisModParams.fasterLowGeometry
     else
         game.config._lolloTownTuning.fasterLowGeometry = results.defaultParams.fasterLowGeometry
     end
 
-	if type(thisModParams) == 'table' and thisModParams.fasterTownDevelopInterval == 0 then
-        game.config._lolloTownTuning.fasterTownDevelopInterval = 0
+	if type(thisModParams) == 'table' and type(thisModParams.fasterTownDevelopInterval) == 'number' then
+        game.config._lolloTownTuning.fasterTownDevelopInterval = thisModParams.fasterTownDevelopInterval
     else
         game.config._lolloTownTuning.fasterTownDevelopInterval = results.defaultParams.fasterTownDevelopInterval
     end
 
-    if type(thisModParams) == 'table' and thisModParams.noSkyscrapers == 0 then
-        game.config._lolloTownTuning.noSkyscrapers = 0
+    if type(thisModParams) == 'table' and type(thisModParams.noSkyscrapers) == 'number' then
+        game.config._lolloTownTuning.noSkyscrapers = thisModParams.noSkyscrapers
     else
         game.config._lolloTownTuning.noSkyscrapers = results.defaultParams.noSkyscrapers
     end
 
-	if type(thisModParams) == 'table' and thisModParams.noSquareCrossings == 0 then
-        game.config._lolloTownTuning.noSquareCrossings = 0
+    if type(thisModParams) == 'table' and type(thisModParams.oldBuildingsInNewEras) == 'number' then
+        game.config._lolloTownTuning.oldBuildingsInNewEras = thisModParams.oldBuildingsInNewEras
+    else
+        game.config._lolloTownTuning.oldBuildingsInNewEras = results.defaultParams.oldBuildingsInNewEras
+    end
+
+	if type(thisModParams) == 'table' and type(thisModParams.noSquareCrossings) == 'number' then
+        game.config._lolloTownTuning.noSquareCrossings = thisModParams.noSquareCrossings
     else
         game.config._lolloTownTuning.noSquareCrossings = results.defaultParams.noSquareCrossings
     end
