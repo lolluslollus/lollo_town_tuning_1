@@ -1,4 +1,5 @@
-local townBuildingUtil = require "townbuildingutil"
+local logger = require('lollo_town_tuning.logger')
+local townBuildingUtil = require 'townbuildingutil'
 
 local _getAvailability = function(ab, bc, isOldBuildingsInNewEras, era)
     -- handle "never" and avoid holes
@@ -48,8 +49,8 @@ return function(ab, bc, isOldBuildingsInNewEras)
         }
 
         local availability = _getAvailability(ab, bc, isOldBuildingsInNewEras, era)
-        print('LOLLO townBuildingUtil.make_building2 firing, era =') debugPrint(era)
-        print('availability =') debugPrint(availability)
+        logger.print('LOLLO townBuildingUtil.make_building2 firing, era =') logger.debugPrint(era)
+        logger.print('availability =') logger.debugPrint(availability)
 
         local townBuildingParams = {
             landUseType = landUseType,
@@ -63,8 +64,8 @@ return function(ab, bc, isOldBuildingsInNewEras)
     townBuildingUtil.make_building_new = function(constructionModelId, buildingModelId, buildingFace, transf, landUseType,
         era, level, parcelSize, assets, scaffolding)
         local availability = _getAvailability(ab, bc, isOldBuildingsInNewEras, era)
-        print('LOLLO townBuildingUtil.make_building_new firing, era =') debugPrint(era)
-        print('availability =') debugPrint(availability)
+        logger.print('LOLLO townBuildingUtil.make_building_new firing, era =') logger.debugPrint(era)
+        logger.print('availability =') logger.debugPrint(availability)
 
         local townBuildingParams = {
             landUseType = landUseType,
