@@ -99,7 +99,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 9,
+			minorVersion = 10,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('ModName'),
@@ -230,7 +230,7 @@ function data()
 			-- 	game.config.simPersonDestinationRecomputationProbability = 1.0
 			end
 
-			logger.print('runFn leaving, game.config = ') logger.debugPrint(game.config)
+			-- logger.print('runFn leaving, game.config = ') logger.debugPrint(game.config)
 		end,
 	}
 end
