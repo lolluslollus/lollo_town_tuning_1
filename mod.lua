@@ -1,9 +1,10 @@
-function data()
-	local arrayUtils = require('lollo_town_tuning.arrayUtils')
-	local commonData = require('lollo_town_tuning.commonData')
-	local logger = require('lollo_town_tuning.logger')
-	local modSettings = require('lollo_town_tuning.settings')
+-- local arrayUtils = require('lollo_town_tuning.arrayUtils')
+local commonData = require('lollo_town_tuning.commonData')
+local logger = require('lollo_town_tuning.logger')
+local modSettings = require('lollo_town_tuning.settings')
+local townBuildingUtilOverride = require('lollo_town_tuning.townBuildingUtilOverride')
 
+function data()
 	local function loadConstructionFunc(fileName, data)
 		-- alter properties of all buildings in all towns
 		-- this fires for every instance of a building, but it does not contain instance-specific data,
@@ -63,14 +64,14 @@ function data()
 			end
 			if result.personCapacity then
 				-- if fileName:find(_testBuildingFileNameSegment) then
-				-- 	print('result.personCapacity.capacity before =', result.personCapacity.capacity)
+				-- 	logger.print('result.personCapacity.capacity before =', result.personCapacity.capacity)
 				-- end
 				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * (common.personCapacityFactor or 1.0))
 				-- if fileName:find(_testBuildingFileNameSegment) then
-				-- 	print('params.capacity =', params.capacity)
+				-- 	logger.print('params.capacity =', params.capacity)
 				-- end
 				-- if fileName:find(_testBuildingFileNameSegment) then
-				-- 	print('result.personCapacity.capacity after =', result.personCapacity.capacity)
+				-- 	logger.print('result.personCapacity.capacity after =', result.personCapacity.capacity)
 				-- end
 			end
 
@@ -79,24 +80,6 @@ function data()
 
 		return data
 	end
-
-	-- local function loadConstructionMenuFunc(fileName, data)
-	-- 	print('loading constructionMenu with fileName =', fileName or 'NIL', 'data =')
-	-- 	debugPrint(data)
-	-- 	return data
-	-- end
-
-	-- local function loadScriptFunc(fileName, data)
-	-- 	print('loading script with fileName =', fileName or 'NIL', 'data =')
-	-- 	debugPrint(data)
-	-- 	return data
-	-- end
-
-	-- local function loadGameScriptFunc(fileName, data)
-	-- 	print('loading game script with fileName =', fileName or 'NIL', 'data =')
-	-- 	debugPrint(data)
-	-- 	return data
-	-- end
 
 	local filterOutSkyscrapersFunc = function(fileName, data)
 		if data and data.type == 'TOWN_BUILDING' then
@@ -119,8 +102,8 @@ function data()
 			minorVersion = 9,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
-			name = _('NAME'),
-			description = _('DESC'),
+			name = _('ModName'),
+			description = _('ModDesc'),
 			tags = { 'Performance', 'Script Mod', 'Town Building' },
 			authors = {
 				{
@@ -128,47 +111,58 @@ function data()
 					role = 'CREATOR',
 				},
 			},
+			-- LOLLO NOTE these params must be declared directly here, references to other includes may dump.
+			-- whenever you amend or add something, make sure to keep their counterparts up to date in settings.lua
 			params = {
                 {
                     key = 'noSkyscrapers',
                     name = _('NO_SKYSCRAPERS'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = modSettings.defaultParams.noSkyscrapers,
+					defaultIndex = 1,
                 },
 				{
                     key = 'oldBuildingsInNewEras',
                     name = _('OLD_BUILDINGS_IN_NEW_ERAS'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = modSettings.defaultParams.oldBuildingsInNewEras,
+                },
+				{
+                    key = 'eraBStartYear',
+                    name = _('ERA_B_START_YEAR'),
+					values = {'1920 (default)', '1850', '1900', '1950', '1980', _('NEVER')},
+                },
+				{
+                    key = 'eraCStartYear',
+                    name = _('ERA_C_START_YEAR'),
+					values = {'1980 (default)', '1850', '1900', '1920', '1950', _('NEVER')},
                 },
                 {
                     key = 'noSquareCrossings',
                     name = _('NO_SQUARE_CROSSINGS'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = modSettings.defaultParams.noSquareCrossings,
+					defaultIndex = 1,
                 },
                 {
                     key = 'fasterLowGeometry',
                     name = _('FASTER_LOW_GEOMETRY'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = modSettings.defaultParams.fasterLowGeometry,
+					defaultIndex = 1,
                 },
                 {
                     key = 'fasterTownDevelopInterval',
                     name = _('FASTER_TOWN_DEVELOP_INTERVAL'),
                     values = { _('No'), _('Yes'), },
-                    defaultIndex = modSettings.defaultParams.fasterTownDevelopInterval,
+					defaultIndex = 1,
                 },
 				{
 					key = 'simPersonDestinationRecomputationProbability',
 					name = _('DESTINATION_RECOMPUTATION_PROBABILITY'),
 					values = { '--', '-', '0', '+', '++' },
-					defaultIndex = modSettings.defaultParams.simPersonDestinationRecomputationProbability,
+					defaultIndex = 2,
 				},
             },
 		},
 		runFn = function (settings, modParams)
-			-- the game disallows global variables in init.lua
+			-- LOLLO NOTE the game disallows global variables in init.lua
 			-- unless I initialise them in runFn
 			-- and it does not share them across states anyway
             -- _G.LOLLO_TOWN_TUNING = {
@@ -179,7 +173,7 @@ function data()
 
 			modSettings.setModParamsFromRunFn(modParams)
 
-			if modSettings.getParam('noSkyscrapers') == 1 then
+			if modSettings.getModParamFromRunFn('noSkyscrapers') == 1 then
 				addFileFilter('construction', filterOutSkyscrapersFunc)
 			end
 			addModifier('loadConstruction', loadConstructionFunc)
@@ -187,19 +181,28 @@ function data()
 			-- addModifier('loadConstructionMenu', loadConstructionMenuFunc)
 			-- addModifier('loadScript', loadScriptFunc)
 			-- addModifier('loadGameScript', loadGameScriptFunc)
-			if modSettings.getParam('oldBuildingsInNewEras') == 1 then
-				local dummy = require('lollo_town_tuning.townBuildingUtilOverload')
+
+			if (modSettings.getModParamFromRunFn('eraBStartYear') ~= modSettings.defaultParams.eraBStartYear
+			or modSettings.getModParamFromRunFn('eraCStartYear') ~= modSettings.defaultParams.eraCStartYear
+			or modSettings.getModParamFromRunFn('oldBuildingsInNewEras') ~= modSettings.defaultParams.oldBuildingsInNewEras)
+			then
+				townBuildingUtilOverride(
+					modSettings.paramValueNumbers.eraBStartYear[modSettings.getModParamFromRunFn('eraBStartYear') + 1],
+					modSettings.paramValueNumbers.eraCStartYear[modSettings.getModParamFromRunFn('eraCStartYear') + 1],
+					modSettings.getModParamFromRunFn('oldBuildingsInNewEras') == 1
+				)
 			end
-			if modSettings.getParam('noSquareCrossings') == 1 then
+
+			if modSettings.getModParamFromRunFn('noSquareCrossings') == 1 then
 				game.config.townMajorStreetAngleRange = 10.0 -- default is 0.0
 				game.config.townInitialMajorStreetAngleRange = 10.0 -- same but only active during first creation of a town
 			end
-			if modSettings.getParam('fasterTownDevelopInterval') == 1 then
+			if modSettings.getModParamFromRunFn('fasterTownDevelopInterval') == 1 then
 				game.config.townDevelopInterval = 20.0 -- default is 60.0
 			end
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
-			if modSettings.getParam('fasterLowGeometry') == 1 then
+			if modSettings.getModParamFromRunFn('fasterLowGeometry') == 1 then
 				if game.config and game.config.settings then
 					game.config.settings.geometryQualityOptions = {
 						-- { viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.5 },		-- Low original
@@ -214,7 +217,7 @@ function data()
 				end
 			end
 
-			local spdrp = modSettings.getParam('simPersonDestinationRecomputationProbability')
+			local spdrp = modSettings.getModParamFromRunFn('simPersonDestinationRecomputationProbability')
 			if spdrp == 0 then
 				game.config.simPersonDestinationRecomputationProbability = 0.1
 			elseif spdrp == 1 then
@@ -227,7 +230,7 @@ function data()
 			-- 	game.config.simPersonDestinationRecomputationProbability = 1.0
 			end
 
-			logger.print('LOLLO game.config = ') logger.debugPrint(game.config)
+			logger.print('runFn leaving, game.config = ') logger.debugPrint(game.config)
 		end,
 	}
 end

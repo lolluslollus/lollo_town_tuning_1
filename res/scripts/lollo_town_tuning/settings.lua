@@ -1,34 +1,43 @@
 local logger = require('lollo_town_tuning.logger')
-local results = {}
 
-local function _getModSettings1()
-    if type(game) ~= 'table' or type(game.config) ~= 'table' then return nil end
-    return game.config._lolloTownTuning
-end
 
-local function _getModSettings2()
-    if type(api) ~= 'table' or type(api.res) ~= 'table' or type(api.res.getBaseConfig) ~= 'table' then return end
+local _utils = {
+    getModSettingsFromGameConfig = function()
+        if type(game) ~= 'table' or type(game.config) ~= 'table' then return nil end
+        return game.config._lolloTownTuning
+    end,
+    getModSettingsFromApi = function()
+        if type(api) ~= 'table' or type(api.res) ~= 'table' or type(api.res.getBaseConfig) ~= 'table' then return end
 
-    local baseConfig = api.res.getBaseConfig()
-    if not(baseConfig) then return end
+        local baseConfig = api.res.getBaseConfig()
+        if not(baseConfig) then return end
 
-    return baseConfig._lolloTownTuning
-end
-
-results.defaultParams = {
-    fasterLowGeometry = 1,
-    fasterTownDevelopInterval = 1,
-    noSkyscrapers = 1,
-    noSquareCrossings = 1,
-    oldBuildingsInNewEras = 0,
-    simPersonDestinationRecomputationProbability = 2,
+        return baseConfig._lolloTownTuning
+    end,
 }
 
-results.getParam = function(fieldName)
-    local modSettings = _getModSettings1() or _getModSettings2()
+local results = {
+    defaultParams = {
+        eraBStartYear = 0,
+        eraCStartYear = 0,
+        fasterLowGeometry = 1,
+        fasterTownDevelopInterval = 1,
+        noSkyscrapers = 1,
+        noSquareCrossings = 1,
+        oldBuildingsInNewEras = 0,
+        simPersonDestinationRecomputationProbability = 2,
+    },
+    paramValueNumbers = {
+        eraBStartYear = { 1920, 1850, 1900, 1950, 1980, -1 },
+        eraCStartYear = { 1980, 1850, 1900, 1920, 1950, -1 },
+    },
+}
+
+results.getModParamFromRunFn = function(fieldName)
+    local modSettings = _utils.getModSettingsFromGameConfig()
     if not(modSettings) then
-        logger.warn('cannot read modSettings')
-        return nil
+        logger.warn('cannot read modSettings, falling back to default')
+        return results.defaultParams[fieldName]
     end
 
     return modSettings[fieldName]
@@ -68,6 +77,18 @@ results.setModParamsFromRunFn = function(modParams)
         game.config._lolloTownTuning.oldBuildingsInNewEras = thisModParams.oldBuildingsInNewEras
     else
         game.config._lolloTownTuning.oldBuildingsInNewEras = results.defaultParams.oldBuildingsInNewEras
+    end
+
+    if type(thisModParams) == 'table' and type(thisModParams.eraBStartYear) == 'number' then
+        game.config._lolloTownTuning.eraBStartYear = thisModParams.eraBStartYear
+    else
+        game.config._lolloTownTuning.eraBStartYear = results.defaultParams.eraBStartYear
+    end
+
+    if type(thisModParams) == 'table' and type(thisModParams.eraCStartYear) == 'number' then
+        game.config._lolloTownTuning.eraCStartYear = thisModParams.eraCStartYear
+    else
+        game.config._lolloTownTuning.eraCStartYear = results.defaultParams.eraCStartYear
     end
 
 	if type(thisModParams) == 'table' and type(thisModParams.noSquareCrossings) == 'number' then
