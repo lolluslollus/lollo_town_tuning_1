@@ -7,6 +7,7 @@ townBuildingUtil.make_building2 = function(buildingFace, landUseType, era, level
 	}
 
 	local ab = 1920
+    -- local ab = 1990
 	local bc = 1990
 
 	-- local availability = {
@@ -30,12 +31,15 @@ end
 
 townBuildingUtil.make_building_new = function(constructionModelId, buildingModelId, buildingFace, transf, landUseType,
     era, level, parcelSize, assets, scaffolding)
+    	local ab = 1900
+        -- local ab = 1975
+        local bc = 1975
     -- local availability = {
     --     yearFrom = era == "A" and 0 or (era == "B" and 1900 or 1975),
     --     yearTo = era == "A" and 1900 or (era == "B" and 1975 or 0)
     -- }
     local availability = {
-        yearFrom = era == "A" and 0 or (era == "B" and 1900 or 1975),
+        yearFrom = era == "A" and 0 or (era == "B" and ab or bc),
         yearTo = 0
     }
     -- print('LOLLO townBuildingUtil.make_building_new firing, era =') debugPrint(era)
