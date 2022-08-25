@@ -128,23 +128,38 @@ arrayUtils.sort = function(table0, elementName, asc)
     return table0
 end
 
+arrayUtils.getCount = function(tab, isDiscardNil)
+    if type(tab) ~= 'table' and type(tab) ~= 'userdata' then
+        return -1
+    end
+
+    local result = 0
+    for _, value in pairs(tab) do
+        if not(isDiscardNil) or value ~= nil then
+            result = result + 1
+        end
+    end
+
+    return result
+end
+
 arrayUtils.findIndex = function(tab, fieldName, fieldValueNonNil)
     if type(tab) ~= 'table' or fieldValueNonNil == nil then return -1 end
 
     if type(fieldName) == 'string' then
         if string.len(fieldName) > 0 then
-            for i = 1, #tab do
-                if type(tab[i]) == 'table' and tab[i][fieldName] == fieldValueNonNil then
+            for key, value in pairs(tab) do
+                if type(value) == 'table' and value[fieldName] == fieldValueNonNil then
                     -- print('LOLLO findIndex found index =', i, 'tab[i][fieldName] =', tab[i][fieldName], 'fieldValueNonNil =', fieldValueNonNil, 'content =')
                     -- debugPrint(tab[i])
-                    return i
+                    return key
                 end
             end
         end
     else
-        for i = 1, #tab do
-            if tab[i] == fieldValueNonNil then
-                return i
+        for key, value in pairs(tab) do
+            if value == fieldValueNonNil then
+                return key
             end
         end
     end
