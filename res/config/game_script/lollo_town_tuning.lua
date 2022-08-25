@@ -578,8 +578,12 @@ _actions.guiAddTuningMenu = function(windowId, townId)
 end
 
 _actions.triggerUpdateTown = function(townId)
+    logger.print('triggerUpdateTown starting; townId =', townId)
+
     local townCargoNeeds = _utils.getCargoNeeds(townId)
     if townCargoNeeds == nil then return end
+
+    logger.print('triggerUpdateTown got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
 
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
@@ -588,20 +592,41 @@ _actions.triggerUpdateTown = function(townId)
 end
 
 _actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
+    logger.print('triggerUpdateTownCargoNeeds starting; townId, areaTypeIndex, cargoTypeId, newValue =', townId, areaTypeIndex, cargoTypeId)
+    logger.debugPrint(newValue)
+
     local townCargoNeeds = _utils.getCargoNeeds(townId)
     if townCargoNeeds == nil then return end
 
+    logger.print('triggerUpdateTownCargoNeeds got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
+
     if newValue then
-        if not(arrayUtils.arrayHasValue(townCargoNeeds[areaTypeIndex], cargoTypeId)) then
+        if arrayUtils.arrayHasValue(townCargoNeeds[areaTypeIndex], cargoTypeId) then
+            return
+        else
             townCargoNeeds[areaTypeIndex][#townCargoNeeds[areaTypeIndex] + 1] = cargoTypeId
         end
     else
         local index = _utils.findIndex(townCargoNeeds[areaTypeIndex], cargoTypeId)
-        if index > -1 then
+        if index < 0 then
+            return
+        else
             townCargoNeeds[areaTypeIndex][index] = nil
+            -- remove holes in the output list
+            for i = 1, #townCargoNeeds[areaTypeIndex], 1 do
+                if townCargoNeeds[areaTypeIndex][i] == nil then
+                    for ii = i + 1, #townCargoNeeds[areaTypeIndex], 1 do
+                        if townCargoNeeds[areaTypeIndex][ii] ~= nil then
+                            townCargoNeeds[areaTypeIndex][i], townCargoNeeds[areaTypeIndex][ii] = townCargoNeeds[areaTypeIndex][ii], townCargoNeeds[areaTypeIndex][i]
+                            break
+                        end
+                    end
+                end
+            end
         end
     end
 
+    logger.print('triggerUpdateTownCargoNeeds about to send command with townCargoNeeds =') logger.debugPrint(townCargoNeeds)
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
         api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds)
