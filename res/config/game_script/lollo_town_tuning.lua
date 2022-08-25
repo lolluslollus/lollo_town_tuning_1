@@ -392,7 +392,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
     end
     parentLayout:addItem(_addInitialLandUseCapacities())
 
-    local _addRequirements = function()
+    local _addCargoNeeds = function()
         local cargoTypes = _dataHelper.cargoTypes.getAllButPassengers()
         -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
 
@@ -458,7 +458,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         end
         return cargoTypesGuiTable
     end
-    parentLayout:addItem(_addRequirements())
+    parentLayout:addItem(_addCargoNeeds())
 
 end
 
