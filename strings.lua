@@ -19,7 +19,9 @@ function data()
 			
 			As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
 
-			NOTE: whenever you alter a parameter that affects all towns, this mod will change the properties of future buildings and recalculate *all* buildings in your map. This will take a while: click one button only and don't touch anything until the game unfreezes.
+			NOTES: 
+			- Whenever you alter a parameter that affects all towns, this mod will change the properties of future buildings and recalculate *all* buildings in your map. This will take a while: click one button only and don't touch anything until the game unfreezes.
+			- The "Editor" tab that appears in sandbox mode may show the wrong values. This is why I deactivated it.
 			
 			PERFORMANCE TIPS:
 			I have a test game with over 50K people and mods to 16-fold the industry output. The game was stuttering badly. This mod and these tricks sped up my machine to par:
@@ -33,7 +35,7 @@ function data()
 			- Limit the frame rate with the Nvidia control panel.
 
 			KNOWN ISSUES:
-			- The "Editor" tab that appears in sandbox mode may show the wrong values. This is why I deactivated it.
+			- If a town seems not to accept some goods, but it should, make any dummy change to its residential, commercial or industrial requirements and revert it, then wait a bit.
 			]],
 			["CAPACITY_FACTOR"] = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
 			["CONSUMPTION_FACTOR"] = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Only click once and wait until the game unfreezes!",
