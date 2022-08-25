@@ -38,7 +38,7 @@ function data()
 			- If a town seems not to accept some goods, but it should, make any dummy change to its residential, commercial or industrial requirements and revert it, then wait a bit.
 			]],
 			["CAPACITY_FACTOR"] = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
-			["CARGO_NEEDS"] = "Cargo needs. Your game may briefly freeze before they update for all buildings.",
+			["CARGO_NEEDS"] = "Cargo needs. Your game may briefly freeze before all buildings update.",
 			["CONSUMPTION_FACTOR"] = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Only click once and wait until the game unfreezes!",
 			["DESTINATION_RECOMPUTATION_PROBABILITY"] = "Sims likely to seek new destinations",
 			["ERA_B_START_YEAR"] = "Era B start year (new buildings only)",

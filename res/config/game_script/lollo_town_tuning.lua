@@ -256,17 +256,6 @@ local _dataHelper = {
 }
 
 local _utils = {
-    findIndex = function(tab, fieldValueNonNil)
-        if fieldValueNonNil == nil then return -1 end
-
-        for i = 1, #tab do
-            if tab[i] == fieldValueNonNil then
-                return i
-            end
-        end
-
-        return -1
-    end,
     getCargoNeeds = function(townId)
         if type(townId) ~= 'number' or townId < 1 then return nil end
 
@@ -393,6 +382,10 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
     parentLayout:addItem(_addInitialLandUseCapacities())
 
     local _addCargoNeeds = function()
+        local cargoTypesBox = api.gui.comp.Component.new('cargoTypesBox')
+        cargoTypesBox:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        cargoTypesBox:getLayout():addItem(api.gui.comp.TextView.new(_('CARGO_NEEDS')))
+
         local cargoTypes = _dataHelper.cargoTypes.getAllButPassengers()
         -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
 
@@ -456,7 +449,9 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
                 cargoTypesGuiTable:addRow({resComp, comComp, indComp})
             end
         end
-        return cargoTypesGuiTable
+
+        cargoTypesBox:getLayout():addItem(cargoTypesGuiTable)
+        return cargoTypesBox
     end
     parentLayout:addItem(_addCargoNeeds())
 
@@ -591,38 +586,37 @@ _actions.triggerUpdateTown = function(townId)
     )
 end
 
-_actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, newValue)
-    logger.print('triggerUpdateTownCargoNeeds starting; townId, areaTypeIndex, cargoTypeId, newValue =', townId, areaTypeIndex, cargoTypeId)
-    logger.debugPrint(newValue)
+_actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, isAdd)
+    logger.print('triggerUpdateTownCargoNeeds starting; townId, areaTypeIndex, cargoTypeId, isAdd =', townId, areaTypeIndex, cargoTypeId, isAdd)
 
     local townCargoNeeds = _utils.getCargoNeeds(townId)
     if townCargoNeeds == nil then return end
 
     logger.print('triggerUpdateTownCargoNeeds got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
 
-    if newValue then
+    if isAdd then
         if arrayUtils.arrayHasValue(townCargoNeeds[areaTypeIndex], cargoTypeId) then
             return
         else
-            townCargoNeeds[areaTypeIndex][#townCargoNeeds[areaTypeIndex] + 1] = cargoTypeId
+            table.insert(townCargoNeeds[areaTypeIndex], cargoTypeId)
         end
-    else
-        local index = _utils.findIndex(townCargoNeeds[areaTypeIndex], cargoTypeId)
+    else -- remove
+        local index = arrayUtils.findIndex(townCargoNeeds[areaTypeIndex], nil, cargoTypeId)
         if index < 0 then
             return
         else
+            logger.print('townCargoNeeds[areaTypeIndex] before deletion =') logger.debugPrint(townCargoNeeds[areaTypeIndex])
             townCargoNeeds[areaTypeIndex][index] = nil
-            -- remove holes in the output list
-            for i = 1, #townCargoNeeds[areaTypeIndex], 1 do
-                if townCargoNeeds[areaTypeIndex][i] == nil then
-                    for ii = i + 1, #townCargoNeeds[areaTypeIndex], 1 do
-                        if townCargoNeeds[areaTypeIndex][ii] ~= nil then
-                            townCargoNeeds[areaTypeIndex][i], townCargoNeeds[areaTypeIndex][ii] = townCargoNeeds[areaTypeIndex][ii], townCargoNeeds[areaTypeIndex][i]
-                            break
-                        end
-                    end
+            logger.print('townCargoNeeds[areaTypeIndex] after deletion =') logger.debugPrint(townCargoNeeds[areaTypeIndex])
+            -- remove holes in the output list keys: 1, 2, 3 instead of 1, 3, 4
+            local newCargoNeeds4Area = {}
+            for _, value in pairs(townCargoNeeds[areaTypeIndex]) do
+                if value ~= nil then
+                    newCargoNeeds4Area[#newCargoNeeds4Area+1] = value
                 end
             end
+            townCargoNeeds[areaTypeIndex] = newCargoNeeds4Area
+            logger.print('newCargoNeeds4Area =') logger.debugPrint(newCargoNeeds4Area)
         end
     end
 

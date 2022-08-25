@@ -1,4 +1,4 @@
--- local arrayUtils = require('lollo_town_tuning.arrayUtils')
+local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local commonData = require('lollo_town_tuning.commonData')
 local logger = require('lollo_town_tuning.logger')
 local modSettings = require('lollo_town_tuning.settings')
@@ -11,9 +11,11 @@ function data()
 		-- such as the building town or location.
 		if not(data) or (data.type ~= 'TOWN_BUILDING') or (type(data.updateFn) ~= 'function') then return data end
 
-		-- LOLLO TODO do we need this?
+		-- LOLLO TODO do we need this? We probably do with some mods
 		if type(data.upgradeFn) ~= 'function' then
 			data.upgradeFn = function(_) end
+		else
+			logger.print('upgradeFn() found for', fileName)
 		end
 
 		local originalUpdateFn = data.updateFn
@@ -21,56 +23,117 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 
---[[ 			
-			if logger.getIsExtendedLog() then
-				local _testBuildingFileNameSegment = 'era_b/com_1_1x2_02.con' -- 'era_b/com_1_4x4_04.con'
+			logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
 
-				-- local sampleResult = {
-				-- 	personCapacity = {
-				-- 		capacity = 4,
-				-- 		type = 'COMMERCIAL', -- 'RESIDENTIAL' 'INDUSTRIAL'
-				-- 	},
-				-- 	rule = { -- only commercial and industrial have this
-				-- 		capacity = 1,
-				-- 		consumptionFactor = 1.2,
-				-- 		input = {
-				-- 			{ 1, },
-				-- 		},
-				-- 		output = { },
-				-- 	},
+			-- local _testBuildingFileNameSegment = 'era_b/com_1_1x2_02.con' -- 'era_b/com_1_4x4_04.con'
+			-- local isLog = false
+			-- if logger.getIsExtendedLog() and fileName:find(_testBuildingFileNameSegment) then
+			-- 	isLog = true
+			-- end
+--[[
+				-- local sampleData =
+				-- {
+				--   availability = {
+				-- 	   yearFrom = 1920,
+				-- 	   yearTo = 1990,
+				--   },
+				--   description = { },
+				--   preProcessFn = <function>,
+				--   soundConfig = {
+				-- 	   soundSet = {
+				-- 	     name = "town_building",
+				-- 	   },
+				--   },
+				--   townBuildingParams = {
+				-- 	   landUseType = "COMMERCIAL",
+				-- 	   level = 1,
+				-- 	   parcelSize = { 1, 2, },
+				--   },
+				--   type = "TOWN_BUILDING",
+				--   updateFn = <function>,
+				--   upgradeFn = <function>,
 				-- }
 
-				logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
-				if fileName:find(_testBuildingFileNameSegment) then
-					logger.print('result =') logger.debugPrint(result)
-					logger.print('data =') logger.debugPrint(data)
-					logger.print('params =') logger.debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
-				end
-			end
+				-- local sampleParams =
+				-- {
+				--   capacity = 1,
+				--   cargoTypes = { "GOODS", "FOOD", },
+				--   depth = 20,
+				--   parcelFace = {
+				-- 	   { -4, 0.0001220703125, -0.045875549316406, },
+				-- 	   { 4, 0.0001220703125, 0.045867919921875, },
+				-- 	   { 3.999755859375, 16.000122070313, 0.045867919921875, },
+				-- 	   { -4.000244140625, 16.000122070313, -0.045875549316406, },
+				--   },
+				--   seed = -97,
+				--   upgrade = true,
+				--   width = 10,
+				-- }
+
+				-- local sampleResult = {
+				-- 	 personCapacity = {
+				-- 	   capacity = 4,
+				-- 	   type = 'COMMERCIAL', -- 'RESIDENTIAL' 'INDUSTRIAL'
+				-- 	 },
+				-- 	 rule = { -- only commercial and industrial have this
+				-- 	   capacity = 1,
+				-- 	   consumptionFactor = 1.2,
+				-- 	   input = {
+				--		 { 1, 0, },
+				--		 { 0, 1, },
+				-- 	   },
+				-- 	   output = { },
+				-- 	 },
+				--   stocks = { -- these update automatically when altering the town cargo needs
+				-- 	   {
+				-- 	 	 cargoType = "GOODS",
+				-- 	 	 edges = { },
+				-- 	 	 moreCapacity = 100,
+				-- 	 	 type = "RECEIVING",
+				-- 	   },
+				-- 	   {
+				-- 	 	 cargoType = "FOOD",
+				-- 	 	 edges = { },
+				-- 	 	 moreCapacity = 100,
+				-- 	 	 type = "RECEIVING",
+				-- 	   },
+				--   },
+				-- }
 ]]
+			-- if isLog then
+			-- 	logger.print('result =') logger.debugPrint(arrayUtils.cloneOmittingFields(result, {'groundFaces', 'models', 'scaffold', 'terrainAlignmentLists'}))
+			-- 	logger.print('data =') logger.debugPrint(data)
+			-- 	logger.print('params =') logger.debugPrint(arrayUtils.cloneDeepOmittingFields(params, {'state'}))
+			-- end
 
 			local common = commonData.get()
 			if result.rule then
 				-- LOLLO NOTE how do I find out where a construction is? There seems to be no way.
-				-- So, capacity etc changes will affect all towns. COnvenient but slow.
-				-- logger.print('result.rule.capacity before =', result.rule.capacity)
-				-- logger.print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
-				-- logger.print('(common.capacityFactor or 1.0) =', (common.capacityFactor or 1.0))
-				-- logger.print('common.consumptionFactor or 1.0 =', common.consumptionFactor or 1.0)
+				-- So, capacity etc changes will affect all towns. Convenient but slow.
+				-- if isLog then
+				-- 	logger.print('common.capacityFactor or 1.0 =', (common.capacityFactor or 1.0))
+				-- 	logger.print('common.consumptionFactor or 1.0 =', (common.consumptionFactor or 1.0))
+				-- 	logger.print('result.rule.capacity before =', result.rule.capacity)
+				-- 	logger.print('result.rule.consumptionFactor before =', result.rule.consumptionFactor)
+				-- end
+
 				result.rule.capacity = math.ceil(result.rule.capacity * (common.capacityFactor or 1.0))
 				result.rule.consumptionFactor = common.consumptionFactor or 1.0
-				-- logger.print('result.rule.capacity after =', result.rule.capacity)
-				-- logger.print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
+
+				-- if isLog then
+				-- 	logger.print('result.rule.capacity after =', result.rule.capacity)
+				-- 	logger.print('result.rule.consumptionFactor after =', result.rule.consumptionFactor)
+				-- end
 			end
 			if result.personCapacity then
-				-- if fileName:find(_testBuildingFileNameSegment) then
+				-- if isLog then
+				-- 	logger.print('common.personCapacityFactor or 1.0 =', (common.personCapacityFactor or 1.0))
 				-- 	logger.print('result.personCapacity.capacity before =', result.personCapacity.capacity)
 				-- end
+
 				result.personCapacity.capacity = math.ceil(result.personCapacity.capacity * (common.personCapacityFactor or 1.0))
-				-- if fileName:find(_testBuildingFileNameSegment) then
-				-- 	logger.print('params.capacity =', params.capacity)
-				-- end
-				-- if fileName:find(_testBuildingFileNameSegment) then
+
+				-- if isLog then
 				-- 	logger.print('result.personCapacity.capacity after =', result.personCapacity.capacity)
 				-- end
 			end
