@@ -5,7 +5,7 @@
 
 -- local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local fileUtils = require('lollo_town_tuning.fileUtils')
-local logger = require('lollo_town_tuning.logger')
+-- local logger = require('lollo_town_tuning.logger')
 
 local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 -- logger.print('current dir =', _currentDir)
