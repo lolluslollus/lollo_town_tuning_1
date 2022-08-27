@@ -39,9 +39,9 @@ function data()
 			KNOWN ISSUES:
 			- If a town seems not to accept some goods, but it should, make any dummy change to its residential, commercial or industrial requirements and revert it, then wait a bit.
 			]],
-			["CAPACITY_FACTOR"] = "Industrial and commercial capacity factor (ie demand), affects all towns. Only click once and wait until the game unfreezes!",
+			["CAPACITY_FACTOR"] = "Industrial and commercial capacity factor (ie demand), affects all towns. Click and wait until the game unfreezes!",
 			["CARGO_NEEDS"] = "Cargo needs. Your game may briefly freeze before all buildings update.",
-			["CONSUMPTION_FACTOR"] = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Only click once and wait until the game unfreezes!",
+			["CONSUMPTION_FACTOR"] = "Industrial and commercial consumption factor (ie supply effectiveness), affects all towns. Click and wait until the game unfreezes!",
 			["DESTINATION_RECOMPUTATION_PROBABILITY"] = "Sims likely to seek new destinations",
 			["ERA_B_START_YEAR"] = "Era B start year (new buildings only)",
 			["ERA_C_START_YEAR"] = "Era C start year (new buildings only)",
@@ -53,7 +53,7 @@ function data()
 			["NO_SKYSCRAPERS"] = "Bar commercial and residential skyscrapers (new buildings only)",
 			["NO_SQUARE_CROSSINGS"] = "AI streets cross at various corners",
 			["OLD_BUILDINGS_IN_NEW_ERAS"] = "AI can make older buildings in newer eras (new buildings only)",
-			["PERSON_CAPACITY_FACTOR"] = "Person capacity factor, affects all buildings in all towns. Only click once and wait until the game unfreezes!",
+			["PERSON_CAPACITY_FACTOR"] = "Person capacity factor, affects all buildings in all towns. Click and wait until the game unfreezes!",
 			["TUNING_TAB_LABEL"] = "Tuning",
 
 			["NEVER"] = "Never",

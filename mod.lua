@@ -11,7 +11,7 @@ function data()
 		-- such as the building town or location.
 		if not(data) or (data.type ~= 'TOWN_BUILDING') or (type(data.updateFn) ~= 'function') then return data end
 
-		-- LOLLO TODO do we need this? We probably do with some mods
+		-- LOLLO TODO do we need this? We probably do with some mods. I took it out with minor 13.
 		-- if type(data.upgradeFn) ~= 'function' then
 		-- 	data.upgradeFn = function(_) return {} end
 		-- else
@@ -162,7 +162,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 12,
+			minorVersion = 13,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('ModName'),
