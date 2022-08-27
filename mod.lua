@@ -162,7 +162,7 @@ function data()
 
 	return {
 		info = {
-			minorVersion = 11,
+			minorVersion = 12,
 			severityAdd = 'NONE',
 			severityRemove = 'NONE',
 			name = _('ModName'),
@@ -205,15 +205,15 @@ function data()
 					defaultIndex = 1,
                 },
                 {
-                    key = 'fasterLowGeometry',
-                    name = _('FASTER_LOW_GEOMETRY'),
-                    values = { _('No'), _('Yes'), _('RENDER_CLOSE_OBJECTS')},
-					defaultIndex = 1,
-                },
-                {
                     key = 'fasterTownDevelopInterval',
                     name = _('FASTER_TOWN_DEVELOP_INTERVAL'),
                     values = { _('No'), _('Yes'), },
+					defaultIndex = 1,
+                },
+				{
+                    key = 'fasterLowGeometry',
+                    name = _('FASTER_LOW_GEOMETRY'),
+                    values = { _('No'), _('Yes'), _('RENDER_CLOSE_OBJECTS')},
 					defaultIndex = 1,
                 },
 				{
@@ -268,7 +268,7 @@ function data()
 			local _fasterLowGeometry = modSettings.getModParamFromRunFn('fasterLowGeometry')
 			if _fasterLowGeometry == 1 or _fasterLowGeometry == 2 then
 				if game.config and game.config.settings then
-					local _closeObjectsRenderLimit = _fasterLowGeometry == 2 and 2.0 or 4.0
+					local _closeObjectsRenderLimit = _fasterLowGeometry == 2 and 1.0 or 4.0
 					game.config.settings.geometryQualityOptions = {
 						-- { viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.5 },		-- Low original
 						{ viewNearFar = { _closeObjectsRenderLimit, 3000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.40 },		-- Low

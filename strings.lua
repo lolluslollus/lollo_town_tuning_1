@@ -8,16 +8,18 @@ function data()
 			If that does not do it, you can alter the industrial and commercial consumption factor (ie supply effectiveness) across all towns.
 			If you want more, you can reduce people requirements in every building.
 			You can also do the opposite and increase the parameters, if you have a NASA computer or a very small game.
+			This affects all buildings, present and future.
 
-			As a bonus, you get switches to:
-			- avoid new skyscrapers,
+			You can add more requirements to residential, commercial and industrial areas, town by town.
+			This affects all buildings, present and future.
+
+			As a bonus, you get switches to control the AI:
+			- avoid new skyscrapers (new buildings only),
 			- set the eras for town building styles (new buildings only),
-			- build new roads with non-square corners,
-			- limit the geometry settings to increase performance,
+			- build roads with non-square corners (new roads only),
 			- develop towns more frequently,
-			- cut the chance that sims seek new destinations.
-			
-			As an added bonus, you can add more requirements to residential, commercial and industrial areas, town by town.
+			- limit the geometry settings to increase performance,
+			- alter the chance that sims seek new destinations.
 
 			NOTES: 
 			- Whenever you alter a parameter that affects all towns, this mod will change the properties of future buildings and recalculate *all* buildings in your map. This will take a while: click one button only and don't touch anything until the game unfreezes.
@@ -50,7 +52,7 @@ function data()
 			["INITIAL_RES_CAPACITY"] = "Initial residential capacity",
 			["NO_SKYSCRAPERS"] = "Bar commercial and residential skyscrapers (new buildings only)",
 			["NO_SQUARE_CROSSINGS"] = "AI streets cross at various corners",
-			["OLD_BUILDINGS_IN_NEW_ERAS"] = "AI can build older buildings in newer eras (new buildings only)",
+			["OLD_BUILDINGS_IN_NEW_ERAS"] = "AI can make older buildings in newer eras (new buildings only)",
 			["PERSON_CAPACITY_FACTOR"] = "Person capacity factor, affects all buildings in all towns. Only click once and wait until the game unfreezes!",
 			["TUNING_TAB_LABEL"] = "Tuning",
 
