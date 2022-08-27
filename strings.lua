@@ -55,6 +55,7 @@ function data()
 			["TUNING_TAB_LABEL"] = "Tuning",
 
 			["NEVER"] = "Never",
+			["RENDER_CLOSE_OBJECTS"] = "Yes + render very close objects"
 		},
 
 	}

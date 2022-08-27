@@ -207,7 +207,7 @@ function data()
                 {
                     key = 'fasterLowGeometry',
                     name = _('FASTER_LOW_GEOMETRY'),
-                    values = { _('No'), _('Yes'), },
+                    values = { _('No'), _('Yes'), _('RENDER_CLOSE_OBJECTS')},
 					defaultIndex = 1,
                 },
                 {
@@ -265,15 +265,17 @@ function data()
 			end
 			-- game.config.animal.populationDensityMultiplier = 0.20 -- was 1 dumps
 
-			if modSettings.getModParamFromRunFn('fasterLowGeometry') == 1 then
+			local _fasterLowGeometry = modSettings.getModParamFromRunFn('fasterLowGeometry')
+			if _fasterLowGeometry == 1 or _fasterLowGeometry == 2 then
 				if game.config and game.config.settings then
+					local _closeObjectsRenderLimit = _fasterLowGeometry == 2 and 2.0 or 4.0
 					game.config.settings.geometryQualityOptions = {
 						-- { viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.5 },		-- Low original
-						{ viewNearFar = { 4.0, 3000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.40 },		-- Low
+						{ viewNearFar = { _closeObjectsRenderLimit, 3000.0 }, fogStartEndFarPerc = { 0.45, 1.0 }, lodDistanceScaling = 0.40 },		-- Low
 						-- { viewNearFar = { 4.0, 6000.0 }, fogStartEndFarPerc = { 0.33, 1.0 }, lodDistanceScaling = 0.75 },	-- Medium original
-						{ viewNearFar = { 4.0, 5000.0 }, fogStartEndFarPerc = { 0.33, 1.0 }, lodDistanceScaling = 0.65 },		-- Medium
-						{ viewNearFar = { 4.0, 7500.0 }, fogStartEndFarPerc = { 0.25, 1.0 }, lodDistanceScaling = 1.0 },		-- High
-						{ viewNearFar = { 4.0, 15000.0 }, fogStartEndFarPerc = { 0.125, 1.0 }, lodDistanceScaling = 10 },	-- Camera tool
+						{ viewNearFar = { _closeObjectsRenderLimit, 5000.0 }, fogStartEndFarPerc = { 0.33, 1.0 }, lodDistanceScaling = 0.65 },		-- Medium
+						{ viewNearFar = { _closeObjectsRenderLimit, 7500.0 }, fogStartEndFarPerc = { 0.25, 1.0 }, lodDistanceScaling = 1.0 },		-- High
+						{ viewNearFar = { _closeObjectsRenderLimit, 15000.0 }, fogStartEndFarPerc = { 0.125, 1.0 }, lodDistanceScaling = 10 },	-- Camera tool
 						-- { viewNearFar = { 0.5, 5000.0 }, fogStartEndFarPerc = { 1.0, 1.0 }, lodDistanceScaling = 1.0 },		-- Cockpit view original
 						{ viewNearFar = { 0.5, 500.0 }, fogStartEndFarPerc = { 0.6, 1.0 }, lodDistanceScaling = 0.125 },		-- Cockpit view
 					}
