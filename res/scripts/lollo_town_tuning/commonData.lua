@@ -18,6 +18,8 @@ local me = {
     defaultConsumptionFactor = 1.2,
     defaultPersonCapacityFactor = 1.0,
 }
+-- returns something in any case, ignoring errors,
+-- then an error string if there was trouble loading
 me.get = function()
     -- if _helperBuffer ~= nil then -- always nil coz set in a different state (thread)
     --     logger.print('buffer in action')
@@ -27,7 +29,7 @@ me.get = function()
     -- print('getting game.LOLLO_TOWN_TUNING =') debugPrint(game.LOLLO_TOWN_TUNING) -- not shared across states
     -- print('getting game.config.LOLLO_TOWN_TUNING =') debugPrint(game.config.LOLLO_TOWN_TUNING) -- not shared across states
     -- print('getting _G.LOLLO_TOWN_TUNING =') debugPrint(_G.LOLLO_TOWN_TUNING) -- not shared across states
-    local result = fileUtils.loadTable(_fileName)
+    local result, err = fileUtils.loadTable(_fileName)
     if type(result) ~= 'table' then
         result = {
             capacityFactor = me.defaultCapacityFactor,
@@ -39,12 +41,16 @@ me.get = function()
 
     -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(result) -- NO!
     -- logger.print('returning data =') logger.debugPrint(result)
-    return result
+    return result, err
 end
+-- returns false if nothing was saved, or true if something was saved,
+-- then an error string if there was trouble loading,
+-- then an error string if there was trouble saving.
 me.set = function(newData)
-    if type(newData) ~= 'table' then return end
+    if type(newData) ~= 'table' then return false, 'newData is empty' end
 
-    local savedData = fileUtils.loadTable(_fileName)
+    local savedData, errLoading = fileUtils.loadTable(_fileName)
+    local errSaving, isSaved = nil, false
     if not(savedData)
     or savedData.capacityFactor ~= newData.capacityFactor
     or savedData.consumptionFactor ~= newData.consumptionFactor
@@ -57,8 +63,11 @@ me.set = function(newData)
         -- _G.LOLLO_TOWN_TUNING.personCapacityFactor = newData.personCapacityFactor
         -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(newData)
         -- logger.print('saving table, data =') -- logger.debugPrint(newData)
-        fileUtils.saveTable(newData, _fileName)
+        errSaving = fileUtils.saveTable(newData, _fileName)
+        isSaved = not(errSaving)
     end
+
+    return isSaved, errLoading, errSaving
 end
 
 return me

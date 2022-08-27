@@ -51,6 +51,9 @@ local _townInitialLandUseCapacities = {
     min = 0,
     step = 50,
 }
+
+local _tuningTabId = 'lolloTownTuningTab'
+
 local state = nil
 
 local _dataHelper = {
@@ -73,7 +76,7 @@ local _dataHelper = {
         get = function()
             local result = arrayUtils.cloneDeepOmittingFields(state)
             if type(result) ~= 'table' then
-                -- logger.print('sharedData found no state, returning defaults')
+                logger.print('sharedData found no state, returning defaults')
                 result = {
                     capacityFactor = _defaultCapacityFactor,
                     consumptionFactor = _defaultConsumptionFactor,
@@ -228,6 +231,120 @@ local _dataHelper = {
             if newFactor == newCommon.personCapacityFactor then return false end
 
             newCommon.personCapacityFactor = newFactor
+
+
+            -- -- LOLLO TODO begin test
+            -- logger.print('test code starting')
+            -- local townCapacities = api.engine.system.townBuildingSystem.getTown2personCapacitiesMap()
+            -- if townCapacities then
+            --     local towns = {}
+            --     for id, personCapacities in pairs(townCapacities) do
+            --         towns[id] = {
+            --             personCapacities = personCapacities,
+            --             townStatWindowId = 'temp.view.entity_' .. tostring(id)
+            --         }
+            --     end
+
+            --     local _getCargoNeeds = function(townId)
+            --         -- if not(_utils.isValidAndExistingId(townId)) then return nil end
+                
+            --         local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+            --         if not(townData) then return nil end
+            --         local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+            --         if not(cargoSupplyAndLimit) then return nil end
+                
+            --         -- LOLLO NOTE since build 35045, townData.cargoNeeds contains 3 com and 3 ind,
+            --         -- even if they are not in use.
+            --         -- As a consequence, we cannot simply return townData.cargoNeeds anymore.
+            --         -- To fix this, we match cargo needs to cargo in use.
+            --         --[[
+            --             cargoSupplyAndLimit = {
+            --                 [11] = 0,
+            --                 [14] = 0,
+            --             }
+            --         ]]
+            --         local usedCargoIdsIndexed = {}
+            --         for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+            --             logger.print(cargoTypeId, cargoSupply)
+            --             usedCargoIdsIndexed[cargoTypeId] = true
+            --         end
+                
+            --         --[[
+            --             cargoNeeds = {
+            --                 [1] = {
+            --                 },
+            --                 [2] = {
+            --                     [1] = 14,
+            --                     [2] = 15,
+            --                     [3] = 16,
+            --                 },
+            --                 [3] = {
+            --                     [1] = 11,
+            --                     [2] = 12,
+            --                     [3] = 13,
+            --                 },
+            --             },
+            --         ]]
+            --         local cargoNeeds = {
+            --             {},
+            --             {},
+            --             {},
+            --         }
+            --         for resComInd, needs in pairs(townData.cargoNeeds) do
+            --             -- resComInd is 1 for res, 2 for com, 3 for ind
+            --             for _, need in pairs(needs) do
+            --                 if usedCargoIdsIndexed[need] then
+            --                     table.insert(cargoNeeds[resComInd], need)
+            --                 end
+            --             end
+            --         end
+                
+            --         logger.print('townId =', townId, 'has cargoNeeds =') logger.debugPrint(cargoNeeds)
+            --         return cargoNeeds
+            --     end
+
+            --     local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(args))
+            --     logger.print('setResult =') logger.debugPrint(_setResult)
+
+            --     for townId, _ in pairs(towns) do
+            --         local townCargoNeeds = _getCargoNeeds(townId)
+            --         if townCargoNeeds ~= nil then
+            --             logger.print('triggerUpdateTown got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
+
+            --             logger.print('time 1 =', os.time())
+            --             api.cmd.sendCommand(
+            --                 -- this triggers updateFn for all the town buildings
+            --                 api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds),
+            --                 function(result, success)
+            --                     logger.print('test - triggerUpdateTown - instantlyUpdateTownCargoNeeds callback, success =', success)
+            --                     logger.debugPrint(result)
+            --                     -- result looks like
+            --                     -- {
+            --                     --     townEntity = 19279,
+            --                     --     cargoNeeds = {
+            --                     --       [1] = {
+            --                     --       },
+            --                     --       [2] = {
+            --                     --         [1] = 16,
+            --                     --       },
+            --                     --       [3] = {
+            --                     --         [1] = 13,
+            --                     --         [2] = 8,
+            --                     --       },
+            --                     --     },
+            --                     --   }
+            --                     logger.print('time 2 =', os.time()) -- this can be 10 units higher than time 1, after updating a large town
+            --                     -- local newCargoNeeds = _utils.getCargoNeeds(townId)
+            --                     -- logger.print('time 3 =', os.time()) -- this is the same as the previous
+            --                     -- logger.print('newCargoNeeds =') logger.debugPrint(newCargoNeeds)
+            --                     -- callback()
+            --                 end
+            --             )
+            --         end
+            --     end
+            --     logger.print('lollo test update triggered for all towns')
+            -- end
+            -- -- LOLLO end test
             api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
                 string.sub(debug.getinfo(1, 'S').source, 1),
                 _eventId,
@@ -256,64 +373,71 @@ local _dataHelper = {
 }
 
 local _utils = {
-    getCargoNeeds = function(townId)
-        if type(townId) ~= 'number' or townId < 1 then return nil end
+    isValidId = function(id)
+        return type(id) == 'number' and id > 0
+    end,
+}
+_utils.isValidAndExistingId = function(id)
+    return _utils.isValidId(id) and api.engine.entityExists(id)
+end
+_utils.getCargoNeeds = function(townId)
+    if not(_utils.isValidAndExistingId(townId)) then return nil end
 
-        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-        if not(townData) then return nil end
-        local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
-        if not(cargoSupplyAndLimit) then return nil end
+    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    if not(townData) then return nil end
+    local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+    if not(cargoSupplyAndLimit) then return nil end
 
-        -- LOLLO NOTE since build 35045, townData.cargoNeeds contains 3 com and 3 ind,
-        -- even if they are not in use.
-        -- As a consequence, we cannot simply return townData.cargoNeeds anymore.
-        -- To fix this, we match cargo needs to cargo in use.
-        --[[
-            cargoSupplyAndLimit = {
-                [11] = 0,
-                [14] = 0,
-            }
-        ]]
-        local usedCargoIdsIndexed = {}
-        for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
-            logger.print(cargoTypeId, cargoSupply)
-            usedCargoIdsIndexed[cargoTypeId] = true
-        end
-
-        --[[
-            cargoNeeds = {
-                [1] = {
-                },
-                [2] = {
-                    [1] = 14,
-                    [2] = 15,
-                    [3] = 16,
-                },
-                [3] = {
-                    [1] = 11,
-                    [2] = 12,
-                    [3] = 13,
-                },
-            },
-        ]]
-        local newCargoNeeds = {
-            {},
-            {},
-            {},
+    -- LOLLO NOTE since build 35045, townData.cargoNeeds contains 3 com and 3 ind,
+    -- even if they are not in use.
+    -- As a consequence, we cannot simply return townData.cargoNeeds anymore.
+    -- To fix this, we match cargo needs to cargo in use.
+    --[[
+        cargoSupplyAndLimit = {
+            [11] = 0,
+            [14] = 0,
         }
-        for resComInd, needs in pairs(townData.cargoNeeds) do
-            -- resComInd is 1 for res, 2 for com, 3 for ind
-            for _, need in pairs(needs) do
-                if usedCargoIdsIndexed[need] then
-                    table.insert(newCargoNeeds[resComInd], need)
-                end
+    ]]
+    local usedCargoIdsIndexed = {}
+    for cargoTypeId, cargoSupply in pairs(cargoSupplyAndLimit) do
+        logger.print(cargoTypeId, cargoSupply)
+        usedCargoIdsIndexed[cargoTypeId] = true
+    end
+
+    --[[
+        cargoNeeds = {
+            [1] = {
+            },
+            [2] = {
+                [1] = 14,
+                [2] = 15,
+                [3] = 16,
+            },
+            [3] = {
+                [1] = 11,
+                [2] = 12,
+                [3] = 13,
+            },
+        },
+    ]]
+    local cargoNeeds = {
+        {},
+        {},
+        {},
+    }
+    for resComInd, needs in pairs(townData.cargoNeeds) do
+        -- resComInd is 1 for res, 2 for com, 3 for ind
+        for _, need in pairs(needs) do
+            if usedCargoIdsIndexed[need] then
+                table.insert(cargoNeeds[resComInd], need)
             end
         end
-
-        logger.print('newCargoNeeds =') logger.debugPrint(newCargoNeeds)
-        return newCargoNeeds
     end
-}
+
+    logger.print('townId =', townId, 'has cargoNeeds =') logger.debugPrint(cargoNeeds)
+    return cargoNeeds
+end
+
 local _actions = {}
 _actions.guiAddOneTownProps = function(parentLayout, townId)
     if type(townId) ~= 'number' or townId < 1 then return end
@@ -349,7 +473,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         resInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 1)
+                _actions.guiTriggerUpdateTownInitialLandUse(townId, newValue, 1)
             end
         )
 
@@ -361,7 +485,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         comInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 2)
+                _actions.guiTriggerUpdateTownInitialLandUse(townId, newValue, 2)
             end
         )
 
@@ -373,7 +497,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
         indInput:onValueChanged(
             function(newValue)
                 logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _actions.triggerUpdateTownInitialLandUse(townId, newValue, 3)
+                _actions.guiTriggerUpdateTownInitialLandUse(townId, newValue, 3)
             end
         )
 
@@ -397,6 +521,7 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
             api.gui.comp.TextView.new(_areaTypes.ind.text)
         })
         if townCargoNeeds ~= nil then
+            local _tuningTab = api.gui.util.getById(_tuningTabId)
             for cargoTypeId, cargoData in pairs(cargoTypes) do
                 local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
                 resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
@@ -404,9 +529,8 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
                 local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                 resCheckBox:onToggle(
                     function(newValue)
-                        cargoTypesGuiTable:setEnabled(false)
-                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue)
-                        cargoTypesGuiTable:setEnabled(true)
+                        _tuningTab:setEnabled(false)
+                        _actions.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
                     end
                 )
                 for _, v in pairs(townCargoNeeds[1]) do
@@ -420,9 +544,8 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
                 local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                 comCheckBox:onToggle(
                     function(newValue)
-                        cargoTypesGuiTable:setEnabled(false)
-                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue)
-                        cargoTypesGuiTable:setEnabled(true)
+                        _tuningTab:setEnabled(false)
+                        _actions.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
                     end
                 )
                 for _, v in pairs(townCargoNeeds[2]) do
@@ -436,9 +559,8 @@ _actions.guiAddOneTownProps = function(parentLayout, townId)
                 local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                 indCheckBox:onToggle(
                     function(newValue)
-                        cargoTypesGuiTable:setEnabled(false)
-                        _actions.triggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue)
-                        cargoTypesGuiTable:setEnabled(true)
+                        _tuningTab:setEnabled(false)
+                        _actions.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
                     end
                 )
                 for _, v in pairs(townCargoNeeds[3]) do
@@ -553,6 +675,7 @@ _actions.guiAddTuningMenu = function(windowId, townId)
     end
 
     local tuningTab = api.gui.comp.Component.new('TUNING')
+    tuningTab:setId(_tuningTabId)
     tuningTab:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
     windowContent:insertTab(
         api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
@@ -573,62 +696,124 @@ _actions.guiAddTuningMenu = function(windowId, townId)
 end
 
 _actions.triggerUpdateTown = function(townId)
-    logger.print('triggerUpdateTown starting; townId =', townId)
+    logger.print('triggerUpdateTown starting; townId =', townId or 'NIL')
+
+    if not(_utils.isValidAndExistingId(townId)) then return nil end
 
     local townCargoNeeds = _utils.getCargoNeeds(townId)
     if townCargoNeeds == nil then return end
 
     logger.print('triggerUpdateTown got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
 
+    logger.print('time 1 =', os.time())
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
-        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds)
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds),
+        function(result, success)
+            logger.print('triggerUpdateTown - instantlyUpdateTownCargoNeeds callback, success =', success)
+            logger.debugPrint(result)
+            -- result looks like
+            -- {
+            --     townEntity = 19279,
+            --     cargoNeeds = {
+            --       [1] = {
+            --       },
+            --       [2] = {
+            --         [1] = 16,
+            --       },
+            --       [3] = {
+            --         [1] = 13,
+            --         [2] = 8,
+            --       },
+            --     },
+            --   }
+            logger.print('time 2 =', os.time()) -- this can be 10 units higher than time 1, after updating a large town
+            -- local newCargoNeeds = _utils.getCargoNeeds(townId)
+            -- logger.print('time 3 =', os.time()) -- this is the same as the previous
+            -- logger.print('newCargoNeeds =') logger.debugPrint(newCargoNeeds)
+            -- callback()
+        end
     )
 end
 
-_actions.triggerUpdateTownCargoNeeds = function(townId, areaTypeIndex, cargoTypeId, isAdd)
-    logger.print('triggerUpdateTownCargoNeeds starting; townId, areaTypeIndex, cargoTypeId, isAdd =', townId, areaTypeIndex, cargoTypeId, isAdd)
+_actions.guiTriggerUpdateTownCargoNeeds = function(townId, resComInd, cargoTypeId, isAdd, callback)
+    logger.print('guiTriggerUpdateTownCargoNeeds starting; townId, resComInd, cargoTypeId, isAdd =', townId, resComInd, cargoTypeId, isAdd)
+
+    if not(_utils.isValidAndExistingId(townId)) or not(_utils.isValidAndExistingId(cargoTypeId)) then return nil end
+    if not(arrayUtils.arrayHasValue({1, 2, 3}, resComInd)) then return nil end
 
     local townCargoNeeds = _utils.getCargoNeeds(townId)
     if townCargoNeeds == nil then return end
 
-    logger.print('triggerUpdateTownCargoNeeds got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
+    logger.print('guiTriggerUpdateTownCargoNeeds got townCargoNeeds =') logger.debugPrint(townCargoNeeds)
 
     if isAdd then
-        if arrayUtils.arrayHasValue(townCargoNeeds[areaTypeIndex], cargoTypeId) then
+        if arrayUtils.arrayHasValue(townCargoNeeds[resComInd], cargoTypeId) then
+            logger.print('cargoTypeId', cargoTypeId, 'is already available, leaving')
             return
         else
-            table.insert(townCargoNeeds[areaTypeIndex], cargoTypeId)
+            table.insert(townCargoNeeds[resComInd], cargoTypeId)
         end
     else -- remove
-        local index = arrayUtils.findIndex(townCargoNeeds[areaTypeIndex], nil, cargoTypeId)
+        local index = arrayUtils.findIndex(townCargoNeeds[resComInd], nil, cargoTypeId)
         if index < 0 then
+            logger.print('cargoTypeId', cargoTypeId, 'wants to be removed but it is not available, leaving')
             return
         else
-            logger.print('townCargoNeeds[areaTypeIndex] before deletion =') logger.debugPrint(townCargoNeeds[areaTypeIndex])
-            townCargoNeeds[areaTypeIndex][index] = nil
-            logger.print('townCargoNeeds[areaTypeIndex] after deletion =') logger.debugPrint(townCargoNeeds[areaTypeIndex])
+            logger.print('townCargoNeeds[resComInd] before deletion =') logger.debugPrint(townCargoNeeds[resComInd])
+            townCargoNeeds[resComInd][index] = nil
+            logger.print('townCargoNeeds[resComInd] after deletion =') logger.debugPrint(townCargoNeeds[resComInd])
             -- remove holes in the output list keys: 1, 2, 3 instead of 1, 3, 4
             local newCargoNeeds4Area = {}
-            for _, value in pairs(townCargoNeeds[areaTypeIndex]) do
+            for _, value in pairs(townCargoNeeds[resComInd]) do
                 if value ~= nil then
                     newCargoNeeds4Area[#newCargoNeeds4Area+1] = value
                 end
             end
-            townCargoNeeds[areaTypeIndex] = newCargoNeeds4Area
+            townCargoNeeds[resComInd] = newCargoNeeds4Area
             logger.print('newCargoNeeds4Area =') logger.debugPrint(newCargoNeeds4Area)
         end
     end
 
-    logger.print('triggerUpdateTownCargoNeeds about to send command with townCargoNeeds =') logger.debugPrint(townCargoNeeds)
+    logger.print('guiTriggerUpdateTownCargoNeeds about to send command with townCargoNeeds =') logger.debugPrint(townCargoNeeds)
+    logger.print('time 1 =', os.time())
     api.cmd.sendCommand(
         -- this triggers updateFn for all the town buildings
-        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds)
+        api.cmd.make.instantlyUpdateTownCargoNeeds(townId, townCargoNeeds),
+        function(result, success)
+            logger.print('instantlyUpdateTownCargoNeeds callback, success =', success)
+            logger.debugPrint(result)
+            -- result looks like
+            -- {
+            --     townEntity = 19279,
+            --     cargoNeeds = {
+            --       [1] = {
+            --       },
+            --       [2] = {
+            --         [1] = 16,
+            --       },
+            --       [3] = {
+            --         [1] = 13,
+            --         [2] = 8,
+            --       },
+            --     },
+            --   }
+            logger.print('time 2 =', os.time()) -- this can be 10 units higher than time 1, after updating a large town
+            -- local newCargoNeeds = _utils.getCargoNeeds(townId)
+            -- logger.print('time 3 =', os.time()) -- this is the same as the previous
+            -- logger.print('newCargoNeeds =') logger.debugPrint(newCargoNeeds)
+            callback()
+        end
     )
 end
 
-_actions.triggerUpdateTownInitialLandUse = function(townId, newCapa, resComInd)
+_actions.guiTriggerUpdateTownInitialLandUse = function(townId, newCapa, resComInd)
+    if not(_utils.isValidAndExistingId(townId)) then return nil end
+    if not(arrayUtils.arrayHasValue({1, 2, 3}, resComInd)) then return nil end
+
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+    if townData == nil then return end
+
     local resCapa = resComInd == 1 and newCapa or townData.initialLandUseCapacities[1]
     local comCapa = resComInd == 2 and newCapa or townData.initialLandUseCapacities[2]
     local indCapa = resComInd == 3 and newCapa or townData.initialLandUseCapacities[3]
@@ -678,23 +863,26 @@ function data()
         -- guiUpdate = function()
         -- fires at intervals in the gui thread
         -- end,
-        handleEvent = function(src, id, name, params)
-            -- if src == 'guidesystem.lua' then return end
-            -- logger.print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
+        handleEvent = function(src, id, name, args)
             if id ~= _eventId then return end
 
-            if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
-                commonData.set(arrayUtils.cloneDeepOmittingFields(params)) -- do this now, the other thread might take too long
-                state = arrayUtils.cloneDeepOmittingFields(params) -- LOLLO NOTE you can only update the state from the worker thread
-                -- logger.print('state updated, new state =')
-                -- logger.debugPrint(state)
+            logger.print('handleEvent caught event with id =', id, 'src =', src, 'name =', name)
 
-                -- logger.print('timer =', os.time())
-                for townId_, _ in pairs(_dataHelper.towns.get()) do
-                    _actions.triggerUpdateTown(townId_)
+            if name == _eventNames.updateState then -- user pressed one of the "all towns" buttons
+                logger.print('args =') logger.debugPrint(args)
+                if args ~= nil then
+                    local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(args)) -- do this now, the other thread might take too long
+                    logger.print('setResult =') logger.debugPrint(_setResult)
+                    state = arrayUtils.cloneDeepOmittingFields(args) -- LOLLO NOTE you can only update the state from the worker thread
+                    logger.print('state updated, new state =') logger.debugPrint(state)
+
+                    -- logger.print('timer =', os.time())
+                    for townId_, _ in pairs(_dataHelper.towns.get()) do
+                        _actions.triggerUpdateTown(townId_)
+                    end
+                    logger.print('update triggered for all towns')
+                    -- logger.print('timer now =', os.time()) nearly instant or useless
                 end
-                logger.print('update triggered for all towns')
-                -- logger.print('timer now =', os.time()) nearly instant or useless
             end
         end,
         load = function(loadedState)
@@ -720,7 +908,8 @@ function data()
                 -- loadedState is the last saved state from the save file (eg lollo-test-01.sav.lua)
                 -- use it to update the temporary file, which we need to convey data to building.updateFn() across lua states
                 logger.print('script.load firing from the worker thread, state =') logger.debugPrint(state)
-                commonData.set(state)
+                local _setResult = commonData.set(state)
+                logger.print('setResult =') logger.debugPrint(_setResult)
             end
         end,
         save = function()
