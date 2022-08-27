@@ -12,11 +12,11 @@ function data()
 		if not(data) or (data.type ~= 'TOWN_BUILDING') or (type(data.updateFn) ~= 'function') then return data end
 
 		-- LOLLO TODO do we need this? We probably do with some mods
-		if type(data.upgradeFn) ~= 'function' then
-			data.upgradeFn = function(_) end
-		else
-			logger.print('upgradeFn() found for', fileName)
-		end
+		-- if type(data.upgradeFn) ~= 'function' then
+		-- 	data.upgradeFn = function(_) return {} end
+		-- else
+		-- 	logger.print('upgradeFn() found for', fileName)
+		-- end
 
 		local originalUpdateFn = data.updateFn
 		data.updateFn = function(params)
