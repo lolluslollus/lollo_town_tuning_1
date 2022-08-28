@@ -481,7 +481,9 @@ local _dataHelpers = {
         if newFactor == newState.personCapacityFactor then return end
 
         newState.personCapacityFactor = newFactor
-
+-- LOLLO TODO here and in its 2 brethrens, set the state after altering the town props,
+-- since it is then saved with the game,
+-- and then release the UI. But try this first. Check the other TODO.
         api.cmd.sendCommand(
             api.cmd.make.sendScriptEvent(
                 string.sub(debug.getinfo(1, 'S').source, 1),
