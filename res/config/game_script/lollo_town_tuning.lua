@@ -283,10 +283,10 @@ local _triggers = {
     end
 }
 
-_triggers.guiTriggerUpdateAllTowns = function(args)
-    if args == nil then return end
+_triggers.guiTriggerUpdateAllTowns = function(newState)
+    if newState == nil then return end
 
-    local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(args)) -- do this now, the other thread might take too long
+    local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(newState)) -- do this now, the other thread might take too long
     logger.print('setResult =') logger.debugPrint(_setResult)
 
     local _tuningTab = api.gui.util.getById(_tuningTabId)
@@ -313,10 +313,10 @@ end
 
 local state = nil
 local _dataHelpers = {
-    get = function()
+    getState = function()
         local result = arrayUtils.cloneDeepOmittingFields(state)
         if type(result) ~= 'table' then
-            logger.print('data.get found no state, returning defaults')
+            logger.print('getState found no state, returning defaults')
             result = {
                 capacityFactor = _defaultCapacityFactor,
                 consumptionFactor = _defaultConsumptionFactor,
@@ -346,9 +346,9 @@ local _dataHelpers = {
     setCapacityFactor = function(index)
         if type(index) ~= 'number' then return end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.capacityFactor) ~= 'number' then
-            newCommon.capacityFactor = _defaultCapacityFactor
+        local newState = arrayUtils.cloneDeepOmittingFields(state)
+        if type(newState.capacityFactor) ~= 'number' then
+            newState.capacityFactor = _defaultCapacityFactor
         end
 
         local newFactor = _defaultCapacityFactor
@@ -364,16 +364,16 @@ local _dataHelpers = {
             newFactor = 2.0
         end
 
-        if newFactor == newCommon.capacityFactor then return end
+        if newFactor == newState.capacityFactor then return end
 
-        newCommon.capacityFactor = newFactor
+        newState.capacityFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newCommon))
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newState)
         ))
     end,
     getConsumptionFactorIndex = function(factor)
@@ -397,9 +397,9 @@ local _dataHelpers = {
     setConsumptionFactor = function(index)
         if type(index) ~= 'number' then return end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.consumptionFactor) ~= 'number' then
-            newCommon.consumptionFactor = _defaultConsumptionFactor
+        local newState = arrayUtils.cloneDeepOmittingFields(state)
+        if type(newState.consumptionFactor) ~= 'number' then
+            newState.consumptionFactor = _defaultConsumptionFactor
         end
 
         local newFactor = _defaultConsumptionFactor
@@ -415,16 +415,16 @@ local _dataHelpers = {
             newFactor = 4.8
         end
 
-        if newFactor == newCommon.consumptionFactor then return end
+        if newFactor == newState.consumptionFactor then return end
 
-        newCommon.consumptionFactor = newFactor
+        newState.consumptionFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newCommon))
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newState)
         ))
     end,
     getPersonCapacityFactorIndex = function(factor)
@@ -450,9 +450,9 @@ local _dataHelpers = {
     setPersonCapacityFactor = function(index)
         if type(index) ~= 'number' then return end
 
-        local newCommon = arrayUtils.cloneDeepOmittingFields(state)
-        if type(newCommon.personCapacityFactor) ~= 'number' then
-            newCommon.personCapacityFactor = _defaultPersonCapacityFactor
+        local newState = arrayUtils.cloneDeepOmittingFields(state)
+        if type(newState.personCapacityFactor) ~= 'number' then
+            newState.personCapacityFactor = _defaultPersonCapacityFactor
         end
 
         local newFactor = _defaultPersonCapacityFactor
@@ -468,16 +468,16 @@ local _dataHelpers = {
             newFactor = 2.0
         end
 
-        if newFactor == newCommon.personCapacityFactor then return end
+        if newFactor == newState.personCapacityFactor then return end
 
-        newCommon.personCapacityFactor = newFactor
+        newState.personCapacityFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newCommon))
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
         api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
             string.sub(debug.getinfo(1, 'S').source, 1),
             _eventId,
             _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newCommon)
+            arrayUtils.cloneDeepOmittingFields(newState)
         ))
     end,
 }
@@ -624,7 +624,7 @@ _guiHelpers.guiAddOneTownProps = function(parentLayout, townId)
 end
 
 _guiHelpers.guiAddAllTownProps = function(parentLayout)
-    local sharedData = _dataHelpers.get()
+    local sharedData = _dataHelpers.getState()
 
     local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
     local capacityToggleButtons = {}
