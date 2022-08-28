@@ -497,220 +497,221 @@ local _dataHelpers = {
     end,
 }
 
-local _guiHelpers = {}
-_guiHelpers.guiAddOneTownProps = function(parentLayout, townId)
-    if type(townId) ~= 'number' or townId < 1 then return end
-    logger.print('townId =', townId or 'NIL')
+local _guiHelpers = {
+    guiAddOneTownProps = function(parentLayout, townId)
+        if type(townId) ~= 'number' or townId < 1 then return end
+        logger.print('townId =', townId or 'NIL')
 
-    local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-    logger.print('townData =') logger.debugPrint(townData or 'NIL')
-    if not(townData) then return end
+        local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
+        logger.print('townData =') logger.debugPrint(townData or 'NIL')
+        if not(townData) then return end
 
-    local townCargoNeeds = _utils.getCargoNeeds(townId)
+        local townCargoNeeds = _utils.getCargoNeeds(townId)
 
-    local _addInitialLandUseCapacities = function()
-        local _getField = function(resComInd)
-            local inputField = api.gui.comp.Slider.new(true)
-            inputField:setMaximum(_townInitialLandUseCapacities.max)
-            inputField:setMinimum(_townInitialLandUseCapacities.min)
-            inputField:setPageStep(_townInitialLandUseCapacities.bigStep)
-            inputField:setStep(_townInitialLandUseCapacities.step)
-            inputField:setValue(townData.initialLandUseCapacities[resComInd], false)
-            local size = api.gui.util.Size.new() size.w = 600
-            inputField:setMinimumSize(size)
-            return inputField
+        local _addInitialLandUseCapacities = function()
+            local _getField = function(resComInd)
+                local inputField = api.gui.comp.Slider.new(true)
+                inputField:setMaximum(_townInitialLandUseCapacities.max)
+                inputField:setMinimum(_townInitialLandUseCapacities.min)
+                inputField:setPageStep(_townInitialLandUseCapacities.bigStep)
+                inputField:setStep(_townInitialLandUseCapacities.step)
+                inputField:setValue(townData.initialLandUseCapacities[resComInd], false)
+                local size = api.gui.util.Size.new() size.w = 600
+                inputField:setMinimumSize(size)
+                return inputField
+            end
+
+            local townInitialLandUseCapacitiesList = api.gui.comp.Component.new('townInitialLandUseCapacitiesList') -- _areaTypes.res.id)
+            townInitialLandUseCapacitiesList:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+
+            townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.res.initialCapaText))
+            local resInput = _getField(1)
+            _guiResOutput:setText(tostring(resInput:getValue()))
+            townInitialLandUseCapacitiesList:getLayout():addItem(resInput)
+            townInitialLandUseCapacitiesList:getLayout():addItem(_guiResOutput)
+            resInput:onValueChanged(
+                function(newValue)
+                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 1)
+                end
+            )
+
+            townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.com.initialCapaText))
+            local comInput = _getField(2)
+            _guiComOutput:setText(tostring(comInput:getValue()))
+            townInitialLandUseCapacitiesList:getLayout():addItem(comInput)
+            townInitialLandUseCapacitiesList:getLayout():addItem(_guiComOutput)
+            comInput:onValueChanged(
+                function(newValue)
+                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 2)
+                end
+            )
+
+            townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.ind.initialCapaText))
+            local indInput = _getField(3)
+            _guiIndOutput:setText(tostring(indInput:getValue()))
+            townInitialLandUseCapacitiesList:getLayout():addItem(indInput)
+            townInitialLandUseCapacitiesList:getLayout():addItem(_guiIndOutput)
+            indInput:onValueChanged(
+                function(newValue)
+                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
+                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 3)
+                end
+            )
+
+            return townInitialLandUseCapacitiesList
         end
+        parentLayout:addItem(_addInitialLandUseCapacities())
 
-        local townInitialLandUseCapacitiesList = api.gui.comp.Component.new('townInitialLandUseCapacitiesList') -- _areaTypes.res.id)
-        townInitialLandUseCapacitiesList:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+        local _addCargoNeeds = function()
+            local cargoTypesBox = api.gui.comp.Component.new('cargoTypesBox')
+            cargoTypesBox:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
+            cargoTypesBox:getLayout():addItem(api.gui.comp.TextView.new(_('CARGO_NEEDS')))
 
-        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.res.initialCapaText))
-        local resInput = _getField(1)
-        _guiResOutput:setText(tostring(resInput:getValue()))
-        townInitialLandUseCapacitiesList:getLayout():addItem(resInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(_guiResOutput)
-        resInput:onValueChanged(
-            function(newValue)
-                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 1)
+            local cargoTypes = _utils.getAllCargoTypesButPassengers()
+            -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
+
+            local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
+            cargoTypesGuiTable:setNumCols(3)
+            cargoTypesGuiTable:addRow({
+                api.gui.comp.TextView.new(_areaTypes.res.text),
+                api.gui.comp.TextView.new(_areaTypes.com.text),
+                api.gui.comp.TextView.new(_areaTypes.ind.text)
+            })
+            if townCargoNeeds ~= nil then
+                local _tuningTab = api.gui.util.getById(_tuningTabId)
+                for cargoTypeId, cargoData in pairs(cargoTypes) do
+                    local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
+                    resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                    resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
+                    local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                    resCheckBox:onToggle(
+                        function(newValue)
+                            _tuningTab:setEnabled(false)
+                            _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
+                        end
+                    )
+                    for _, v in pairs(townCargoNeeds[1]) do
+                        if v == cargoTypeId then resCheckBox:setSelected(true, false) end
+                    end
+                    resComp:getLayout():addItem(resCheckBox)
+
+                    local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
+                    comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                    comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                    local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                    comCheckBox:onToggle(
+                        function(newValue)
+                            _tuningTab:setEnabled(false)
+                            _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
+                        end
+                    )
+                    for _, v in pairs(townCargoNeeds[2]) do
+                        if v == cargoTypeId then comCheckBox:setSelected(true, false) end
+                    end
+                    comComp:getLayout():addItem(comCheckBox)
+
+                    local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
+                    indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
+                    indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                    local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
+                    indCheckBox:onToggle(
+                        function(newValue)
+                            _tuningTab:setEnabled(false)
+                            _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
+                        end
+                    )
+                    for _, v in pairs(townCargoNeeds[3]) do
+                        if v == cargoTypeId then indCheckBox:setSelected(true, false) end
+                    end
+                    indComp:getLayout():addItem(indCheckBox)
+
+                    cargoTypesGuiTable:addRow({resComp, comComp, indComp})
+                end
+            end
+
+            cargoTypesBox:getLayout():addItem(cargoTypesGuiTable)
+            return cargoTypesBox
+        end
+        parentLayout:addItem(_addCargoNeeds())
+
+    end,
+
+    guiAddAllTownProps = function(parentLayout)
+        local sharedData = _dataHelpers.getState()
+
+        local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
+        local capacityToggleButtons = {}
+        capacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
+        capacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
+        capacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
+        capacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
+        capacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
+        capacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+        local capacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
+        capacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
+        capacityToggleButtonGroup:setEmitSignal(false)
+        capacityToggleButtonGroup:onCurrentIndexChanged(
+            function(newIndexBase0)
+                _dataHelpers.setCapacityFactor(newIndexBase0 + 1)
             end
         )
+        for i = 1, #capacityToggleButtons do
+            capacityToggleButtonGroup:add(capacityToggleButtons[i])
+        end
+        capacityToggleButtons[_dataHelpers.getCapacityFactorIndex(sharedData.capacityFactor)]:setSelected(true, false)
 
-        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.com.initialCapaText))
-        local comInput = _getField(2)
-        _guiComOutput:setText(tostring(comInput:getValue()))
-        townInitialLandUseCapacitiesList:getLayout():addItem(comInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(_guiComOutput)
-        comInput:onValueChanged(
-            function(newValue)
-                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 2)
+        local consumptionTextViewTitle = api.gui.comp.TextView.new(_('CONSUMPTION_FACTOR'))
+        local consumptionToggleButtons = {}
+        consumptionToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
+        consumptionToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
+        consumptionToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
+        consumptionToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
+        consumptionToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+        consumptionToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+++"))
+        local consumptionToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
+        consumptionToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
+        consumptionToggleButtonGroup:setEmitSignal(false)
+        consumptionToggleButtonGroup:onCurrentIndexChanged(
+            function(newIndexBase0)
+                _dataHelpers.setConsumptionFactor(newIndexBase0 + 1)
             end
         )
+        for i = 1, #consumptionToggleButtons do
+            consumptionToggleButtonGroup:add(consumptionToggleButtons[i])
+        end
+        consumptionToggleButtons[_dataHelpers.getConsumptionFactorIndex(sharedData.consumptionFactor)]:setSelected(true, false)
 
-        townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.ind.initialCapaText))
-        local indInput = _getField(3)
-        _guiIndOutput:setText(tostring(indInput:getValue()))
-        townInitialLandUseCapacitiesList:getLayout():addItem(indInput)
-        townInitialLandUseCapacitiesList:getLayout():addItem(_guiIndOutput)
-        indInput:onValueChanged(
-            function(newValue)
-                logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 3)
+        local personCapacityTextViewTitle = api.gui.comp.TextView.new(_('PERSON_CAPACITY_FACTOR'))
+        local personCapacityToggleButtons = {}
+        personCapacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
+        personCapacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
+        personCapacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
+        personCapacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
+        personCapacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
+        personCapacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+        local personCapacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
+        personCapacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
+        personCapacityToggleButtonGroup:setEmitSignal(false)
+        personCapacityToggleButtonGroup:onCurrentIndexChanged(
+            function(newIndexBase0)
+                _dataHelpers.setPersonCapacityFactor(newIndexBase0 + 1)
             end
         )
-
-        return townInitialLandUseCapacitiesList
-    end
-    parentLayout:addItem(_addInitialLandUseCapacities())
-
-    local _addCargoNeeds = function()
-        local cargoTypesBox = api.gui.comp.Component.new('cargoTypesBox')
-        cargoTypesBox:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
-        cargoTypesBox:getLayout():addItem(api.gui.comp.TextView.new(_('CARGO_NEEDS')))
-
-        local cargoTypes = _utils.getAllCargoTypesButPassengers()
-        -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
-
-        local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
-        cargoTypesGuiTable:setNumCols(3)
-        cargoTypesGuiTable:addRow({
-            api.gui.comp.TextView.new(_areaTypes.res.text),
-            api.gui.comp.TextView.new(_areaTypes.com.text),
-            api.gui.comp.TextView.new(_areaTypes.ind.text)
-        })
-        if townCargoNeeds ~= nil then
-            local _tuningTab = api.gui.util.getById(_tuningTabId)
-            for cargoTypeId, cargoData in pairs(cargoTypes) do
-                local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
-                resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
-                local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-                resCheckBox:onToggle(
-                    function(newValue)
-                        _tuningTab:setEnabled(false)
-                        _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.res.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
-                    end
-                )
-                for _, v in pairs(townCargoNeeds[1]) do
-                    if v == cargoTypeId then resCheckBox:setSelected(true, false) end
-                end
-                resComp:getLayout():addItem(resCheckBox)
-
-                local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
-                comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-                local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-                comCheckBox:onToggle(
-                    function(newValue)
-                        _tuningTab:setEnabled(false)
-                        _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.com.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
-                    end
-                )
-                for _, v in pairs(townCargoNeeds[2]) do
-                    if v == cargoTypeId then comCheckBox:setSelected(true, false) end
-                end
-                comComp:getLayout():addItem(comCheckBox)
-
-                local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
-                indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
-                local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
-                indCheckBox:onToggle(
-                    function(newValue)
-                        _tuningTab:setEnabled(false)
-                        _triggers.guiTriggerUpdateTownCargoNeeds(townId, _areaTypes.ind.index, cargoTypeId, newValue, function() _tuningTab:setEnabled(true) end)
-                    end
-                )
-                for _, v in pairs(townCargoNeeds[3]) do
-                    if v == cargoTypeId then indCheckBox:setSelected(true, false) end
-                end
-                indComp:getLayout():addItem(indCheckBox)
-
-                cargoTypesGuiTable:addRow({resComp, comComp, indComp})
-            end
+        for i = 1, #personCapacityToggleButtons do
+            personCapacityToggleButtonGroup:add(personCapacityToggleButtons[i])
         end
+        personCapacityToggleButtons[_dataHelpers.getPersonCapacityFactorIndex(sharedData.personCapacityFactor)]:setSelected(true, false)
 
-        cargoTypesBox:getLayout():addItem(cargoTypesGuiTable)
-        return cargoTypesBox
-    end
-    parentLayout:addItem(_addCargoNeeds())
-
-end
-
-_guiHelpers.guiAddAllTownProps = function(parentLayout)
-    local sharedData = _dataHelpers.getState()
-
-    local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
-    local capacityToggleButtons = {}
-    capacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
-    capacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
-    capacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
-    capacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
-    capacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
-    capacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
-    local capacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
-    capacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
-    capacityToggleButtonGroup:setEmitSignal(false)
-    capacityToggleButtonGroup:onCurrentIndexChanged(
-        function(newIndexBase0)
-            _dataHelpers.setCapacityFactor(newIndexBase0 + 1)
-        end
-    )
-    for i = 1, #capacityToggleButtons do
-        capacityToggleButtonGroup:add(capacityToggleButtons[i])
-    end
-    capacityToggleButtons[_dataHelpers.getCapacityFactorIndex(sharedData.capacityFactor)]:setSelected(true, false)
-
-    local consumptionTextViewTitle = api.gui.comp.TextView.new(_('CONSUMPTION_FACTOR'))
-    local consumptionToggleButtons = {}
-    consumptionToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
-    consumptionToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
-    consumptionToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
-    consumptionToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
-    consumptionToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
-    consumptionToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+++"))
-    local consumptionToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
-    consumptionToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
-    consumptionToggleButtonGroup:setEmitSignal(false)
-    consumptionToggleButtonGroup:onCurrentIndexChanged(
-        function(newIndexBase0)
-            _dataHelpers.setConsumptionFactor(newIndexBase0 + 1)
-        end
-    )
-    for i = 1, #consumptionToggleButtons do
-        consumptionToggleButtonGroup:add(consumptionToggleButtons[i])
-    end
-    consumptionToggleButtons[_dataHelpers.getConsumptionFactorIndex(sharedData.consumptionFactor)]:setSelected(true, false)
-
-    local personCapacityTextViewTitle = api.gui.comp.TextView.new(_('PERSON_CAPACITY_FACTOR'))
-    local personCapacityToggleButtons = {}
-    personCapacityToggleButtons[1] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("---"))
-    personCapacityToggleButtons[2] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("--"))
-    personCapacityToggleButtons[3] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("-"))
-    personCapacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
-    personCapacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
-    personCapacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
-    local personCapacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
-    personCapacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
-    personCapacityToggleButtonGroup:setEmitSignal(false)
-    personCapacityToggleButtonGroup:onCurrentIndexChanged(
-        function(newIndexBase0)
-            _dataHelpers.setPersonCapacityFactor(newIndexBase0 + 1)
-        end
-    )
-    for i = 1, #personCapacityToggleButtons do
-        personCapacityToggleButtonGroup:add(personCapacityToggleButtons[i])
-    end
-    personCapacityToggleButtons[_dataHelpers.getPersonCapacityFactorIndex(sharedData.personCapacityFactor)]:setSelected(true, false)
-
-    parentLayout:addItem(capacityTextViewTitle)
-    parentLayout:addItem(capacityToggleButtonGroup)
-    parentLayout:addItem(consumptionTextViewTitle)
-    parentLayout:addItem(consumptionToggleButtonGroup)
-    parentLayout:addItem(personCapacityTextViewTitle)
-    parentLayout:addItem(personCapacityToggleButtonGroup)
-end
+        parentLayout:addItem(capacityTextViewTitle)
+        parentLayout:addItem(capacityToggleButtonGroup)
+        parentLayout:addItem(consumptionTextViewTitle)
+        parentLayout:addItem(consumptionToggleButtonGroup)
+        parentLayout:addItem(personCapacityTextViewTitle)
+        parentLayout:addItem(personCapacityToggleButtonGroup)
+    end,
+}
 
 _guiHelpers.guiAddTuningMenu = function(windowId, townId)
     -- these 3 must be inited in the UI thread
@@ -796,6 +797,7 @@ function data()
                 if args ~= nil then
                     state = arrayUtils.cloneDeepOmittingFields(args) -- LOLLO NOTE you can only update the state from the worker thread
                     logger.print('state updated, new state =') logger.debugPrint(state)
+                    return { isStateUpdated = true } -- LOLLO TODO see if this comes back in the caller callback
                 end
             end
         end,
