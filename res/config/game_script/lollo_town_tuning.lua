@@ -368,13 +368,18 @@ local _dataHelpers = {
 
         newState.capacityFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newState)
-        ))
+        api.cmd.sendCommand(
+            api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newState)
+            ),
+            function(result, success)
+                logger.print('setCapacityFactor - updateState success =', success, 'result =') logger.debugPrint(result)
+                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
+            end
+        )
     end,
     getConsumptionFactorIndex = function(factor)
         if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
@@ -419,13 +424,18 @@ local _dataHelpers = {
 
         newState.consumptionFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newState)
-        ))
+        api.cmd.sendCommand(
+            api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newState)
+            ),
+            function(result, success)
+                logger.print('setConsumptionFactor - updateState success =', success, 'result =') logger.debugPrint(result)
+                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
+            end
+        )
     end,
     getPersonCapacityFactorIndex = function(factor)
         if type(factor) ~= 'number' then
@@ -472,13 +482,18 @@ local _dataHelpers = {
 
         newState.personCapacityFactor = newFactor
 
-        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-        api.cmd.sendCommand(api.cmd.make.sendScriptEvent(
-            string.sub(debug.getinfo(1, 'S').source, 1),
-            _eventId,
-            _eventNames.updateState,
-            arrayUtils.cloneDeepOmittingFields(newState)
-        ))
+        api.cmd.sendCommand(
+            api.cmd.make.sendScriptEvent(
+                string.sub(debug.getinfo(1, 'S').source, 1),
+                _eventId,
+                _eventNames.updateState,
+                arrayUtils.cloneDeepOmittingFields(newState)
+            ),
+            function(result, success)
+                logger.print('setPersonCapacityFactor - updateState success =', success, 'result =') logger.debugPrint(result)
+                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
+            end
+        )
     end,
 }
 
