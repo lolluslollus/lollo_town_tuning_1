@@ -313,7 +313,7 @@ _triggers.guiTriggerUpdateAllTowns = function(newState)
                 ),
                 function(result, success)
                     -- set the state after processing the new town props,
-                    -- since it is then saved with the game,
+                    -- since it is eventually saved with the game and we need it accurate,
                     -- and then release the UI. 
                     logger.print('guiTriggerUpdateAllTowns - updateState success =', success, 'result =') logger.debugPrint(result)
                     _tuningTab:setEnabled(true)
