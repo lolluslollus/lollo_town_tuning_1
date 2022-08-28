@@ -303,8 +303,22 @@ _triggers.guiTriggerUpdateAllTowns = function(newState)
     local _endHandler = function()
         processedTownsCount = processedTownsCount + 1
         if processedTownsCount >= allTownsCount then
-            logger.print('update triggered for all towns')
-            _tuningTab:setEnabled(true)
+            logger.print('all towns updated')
+            api.cmd.sendCommand(
+                api.cmd.make.sendScriptEvent(
+                    string.sub(debug.getinfo(1, 'S').source, 1),
+                    _eventId,
+                    _eventNames.updateState,
+                    arrayUtils.cloneDeepOmittingFields(newState)
+                ),
+                function(result, success)
+                    -- set the state after processing the new town props,
+                    -- since it is then saved with the game,
+                    -- and then release the UI. 
+                    logger.print('guiTriggerUpdateAllTowns - updateState success =', success, 'result =') logger.debugPrint(result)
+                    _tuningTab:setEnabled(true)
+                end
+            )
         end
     end
     for townId, _ in pairs(_towns) do
@@ -368,19 +382,7 @@ local _dataHelpers = {
         if newFactor == newState.capacityFactor then return end
 
         newState.capacityFactor = newFactor
-
-        api.cmd.sendCommand(
-            api.cmd.make.sendScriptEvent(
-                string.sub(debug.getinfo(1, 'S').source, 1),
-                _eventId,
-                _eventNames.updateState,
-                arrayUtils.cloneDeepOmittingFields(newState)
-            ),
-            function(result, success)
-                logger.print('setCapacityFactor - updateState success =', success, 'result =') logger.debugPrint(result)
-                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-            end
-        )
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
     end,
     getConsumptionFactorIndex = function(factor)
         if type(factor) ~= 'number' then factor = _defaultConsumptionFactor end
@@ -424,19 +426,7 @@ local _dataHelpers = {
         if newFactor == newState.consumptionFactor then return end
 
         newState.consumptionFactor = newFactor
-
-        api.cmd.sendCommand(
-            api.cmd.make.sendScriptEvent(
-                string.sub(debug.getinfo(1, 'S').source, 1),
-                _eventId,
-                _eventNames.updateState,
-                arrayUtils.cloneDeepOmittingFields(newState)
-            ),
-            function(result, success)
-                logger.print('setConsumptionFactor - updateState success =', success, 'result =') logger.debugPrint(result)
-                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-            end
-        )
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
     end,
     getPersonCapacityFactorIndex = function(factor)
         if type(factor) ~= 'number' then
@@ -482,21 +472,7 @@ local _dataHelpers = {
         if newFactor == newState.personCapacityFactor then return end
 
         newState.personCapacityFactor = newFactor
--- LOLLO TODO here and in its 2 brethrens, set the state after altering the town props,
--- since it is then saved with the game,
--- and then release the UI. But try this first. Check the other TODO.
-        api.cmd.sendCommand(
-            api.cmd.make.sendScriptEvent(
-                string.sub(debug.getinfo(1, 'S').source, 1),
-                _eventId,
-                _eventNames.updateState,
-                arrayUtils.cloneDeepOmittingFields(newState)
-            ),
-            function(result, success)
-                logger.print('setPersonCapacityFactor - updateState success =', success, 'result =') logger.debugPrint(result)
-                _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
-            end
-        )
+        _triggers.guiTriggerUpdateAllTowns(arrayUtils.cloneDeepOmittingFields(newState))
     end,
 }
 
@@ -800,7 +776,6 @@ function data()
                 if args ~= nil then
                     state = arrayUtils.cloneDeepOmittingFields(args) -- LOLLO NOTE you can only update the state from the worker thread
                     logger.print('state updated, new state =') logger.debugPrint(state)
-                    return { isStateUpdated = true } -- LOLLO TODO see if this comes back in the caller callback
                 end
             end
         end,
