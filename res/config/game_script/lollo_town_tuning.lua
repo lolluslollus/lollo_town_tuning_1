@@ -284,10 +284,11 @@ local _triggers = {
 }
 
 _triggers.guiTriggerUpdateAllTowns = function(newState)
+    logger.print('guiTriggerUpdateAllTowns starting, newState =') logger.debugPrint(newState)
     if newState == nil then return end
 
     local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(newState)) -- do this now, the other thread might take too long
-    logger.print('setResult =') logger.debugPrint(_setResult)
+    logger.print('guiTriggerUpdateAllTowns - setResult =') logger.debugPrint(_setResult)
 
     local _tuningTab = api.gui.util.getById(_tuningTabId)
     _tuningTab:setEnabled(false)
