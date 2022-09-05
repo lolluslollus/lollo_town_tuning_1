@@ -3,7 +3,7 @@ function data()
 		en = {
 			["ModName"] = "Town tuning",
 			["ModDesc"] = [[Control town building requirements and capacities.
-			This mod adds a "tuning" tab to the town menus, where you can alter some parameters affecting all buildings, present and future. It's not just a filter for future buildings, but a tool to rescue a game that has grown too laggy.
+			This mod adds a "tuning" tab to the town menus, where you can alter some parameters affecting all buildings, present and future. It's not just a tweak for future buildings, but a tool to rescue a game that has grown too laggy.
 			If your game has grown and ground to a halt, you can reduce the industrial and commercial demand across all towns.
 			If that does not do it, you can raise the industrial and commercial consumption factor (ie supply effectiveness) across all towns.
 			If you want more, you can reduce people requirements in every building. This will reduce the population across your map.
