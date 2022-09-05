@@ -3,15 +3,15 @@ function data()
 		en = {
 			["ModName"] = "Town tuning",
 			["ModDesc"] = [[Control town building requirements and capacities.
-			This mod adds a "tuning" tab to the town menus, where you can alter some parameters in new and old games.
+			This mod adds a "tuning" tab to the town menus, where you can alter some parameters affecting all buildings, present and future. It's not just a filter for future buildings, but a tool to rescue a game that has grown too laggy.
 			If your game has grown and ground to a halt, you can reduce the industrial and commercial demand across all towns.
-			If that does not do it, you can alter the industrial and commercial consumption factor (ie supply effectiveness) across all towns.
-			If you want more, you can reduce people requirements in every building.
+			If that does not do it, you can raise the industrial and commercial consumption factor (ie supply effectiveness) across all towns.
+			If you want more, you can reduce people requirements in every building. This will reduce the population across your map.
 			You can also do the opposite and increase the parameters, if you have a NASA computer or a very small game.
-			This affects all buildings, present and future.
+			These adjustments affect all buildings, present and future.
 
-			You can add more requirements to residential, commercial and industrial areas, town by town.
-			This affects all buildings, present and future.
+			You can add or remove requirements to residential, commercial and industrial areas, town by town.
+			Also this affects all buildings, present and future.
 
 			As a bonus, you get switches to control the AI:
 			- avoid new skyscrapers (new buildings only),
@@ -37,7 +37,7 @@ function data()
 			- Limit the frame rate with the Nvidia control panel.
 
 			KNOWN ISSUES:
-			- If a town seems not to accept some goods, but it should, make any dummy change to its residential, commercial or industrial requirements and revert it, then wait a bit.
+			- If a town seems not to accept some goods, but it should, make any dummy change to its residential, commercial or industrial requirements, wait until the game unfreezes, then undo your change and wait again.
 			]],
 			["CAPACITY_FACTOR"] = "Industrial and commercial capacity factor (ie demand), affects all towns. Click and wait until the game unfreezes!",
 			["CARGO_NEEDS"] = "Cargo needs. Your game may briefly freeze before all buildings update.",
