@@ -5,7 +5,7 @@
 
 -- local arrayUtils = require('lollo_town_tuning.arrayUtils')
 local fileUtils = require('lollo_town_tuning.fileUtils')
--- local logger = require('lollo_town_tuning.logger')
+local logger = require('lollo_town_tuning.logger')
 
 local _currentDir = fileUtils.getParentDirFromPath(fileUtils.getCurrentPath())
 -- logger.print('current dir =', _currentDir)
@@ -29,9 +29,10 @@ me.get = function()
     -- print('getting game.LOLLO_TOWN_TUNING =') debugPrint(game.LOLLO_TOWN_TUNING) -- not shared across states
     -- print('getting game.config.LOLLO_TOWN_TUNING =') debugPrint(game.config.LOLLO_TOWN_TUNING) -- not shared across states
     -- print('getting _G.LOLLO_TOWN_TUNING =') debugPrint(_G.LOLLO_TOWN_TUNING) -- not shared across states
-    local result, err = fileUtils.loadTable(_fileName)
-    if type(result) ~= 'table' then
-        result = {
+    local savedData, err = fileUtils.loadTable(_fileName)
+    -- logger.print('savedData =') logger.debugPrint(savedData)
+    if type(savedData) ~= 'table' then
+        savedData = {
             capacityFactor = me.defaultCapacityFactor,
             consumptionFactor = me.defaultConsumptionFactor,
             personCapacityFactor = me.defaultPersonCapacityFactor
@@ -39,9 +40,9 @@ me.get = function()
         -- logger.print('no table found, returning defaults')
     end
 
-    -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(result) -- NO!
-    -- logger.print('returning data =') logger.debugPrint(result)
-    return result, err
+    -- _helperBuffer = arrayUtils.cloneDeepOmittingFields(savedData) -- NO!
+    -- logger.print('returning data =') logger.debugPrint(savedData)
+    return savedData, err
 end
 -- returns false if nothing was saved, or true if something was saved,
 -- then an error string if there was trouble loading,
@@ -50,8 +51,10 @@ me.set = function(newData)
     if type(newData) ~= 'table' then return false, 'newData is empty' end
 
     local savedData, errLoading = fileUtils.loadTable(_fileName)
+    -- logger.print('savedData =') logger.debugPrint(savedData)
+
     local errSaving, isSaved = nil, false
-    if not(savedData)
+    if type(savedData) ~= 'table'
     or savedData.capacityFactor ~= newData.capacityFactor
     or savedData.consumptionFactor ~= newData.consumptionFactor
     or savedData.personCapacityFactor ~= newData.personCapacityFactor
