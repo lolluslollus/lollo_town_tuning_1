@@ -4,7 +4,7 @@ local _isErrorLogActive = true
 local _isTimersActive = false
 
 return {
-    getIsExtendedLog = function()
+    isExtendedLog = function()
         return _isExtendedLogActive
     end,
     print = function(...)

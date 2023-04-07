@@ -23,11 +23,13 @@ function data()
 			local result = originalUpdateFn(params)
 			if not(result) then return result end
 
-			logger.print('construction.updateFn starting for TOWN_BUILDING with filename =', fileName)
+			logger.print('construction.updateFn starting for TOWN_BUILDING with filename = ' .. fileName .. '; params.upgrade = ' .. tostring(params.upgrade))
+
+			-- if not(params.upgrade) then return result end
 
 			-- local _testBuildingFileNameSegment = 'era_b/com_1_1x2_02.con' -- 'era_b/com_1_4x4_04.con'
 			-- local isLog = false
-			-- if logger.getIsExtendedLog() and fileName:find(_testBuildingFileNameSegment) then
+			-- if logger.isExtendedLog() and fileName:find(_testBuildingFileNameSegment) then
 			-- 	isLog = true
 			-- end
 --[[
