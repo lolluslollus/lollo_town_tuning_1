@@ -52,10 +52,21 @@ local _townInitialLandUseCapacities = {
     step = 50,
 }
 
+local _capacityButtonId = 'lolloTownTuning_capacityButtonId'
+local _consumptionButtonId = 'lolloTownTuning_consumptionButtonId'
+local _personCapacityButtonId = 'lolloTownTuning_personCapacityButtonId'
 local _tuningTabId = 'lolloTownTuningTab'
 
-
 local _utils = {
+    getCapacityButtonId = function (townId, index)
+        return _capacityButtonId .. '_' .. townId .. '_' .. index
+    end,
+    getConsumptionButtonId = function (townId, index)
+        return _consumptionButtonId .. '_' .. townId .. '_' .. index
+    end,
+    getPersonCapacityButtonId = function (townId, index)
+        return _personCapacityButtonId .. '_' .. townId .. '_' .. index
+    end,
     getTuningTabId = function (townId)
         return _tuningTabId .. '_' .. townId
     end,
@@ -626,7 +637,24 @@ local _guiHelpers = {
 
     end,
 
-    guiAddAllTownProps = function(parentLayout)
+    guiAddAllTownProps = function(parentLayout, townId, towns_indexedBy_townId)
+        local _syncOtherTownWindows = function(getIdFunc, buttonCount, newIndexBase1)
+            for otherTownId, _ in pairs(towns_indexedBy_townId) do
+                if otherTownId ~= townId then
+                    local otherTownButton = api.gui.util.getById(getIdFunc(otherTownId, newIndexBase1))
+                    if otherTownButton ~= nil then
+                        otherTownButton:setSelected(true, false)
+                        for i = 1, buttonCount, 1 do
+                            if i ~= newIndexBase1 then
+                                otherTownButton = api.gui.util.getById(getIdFunc(otherTownId, i))
+                                otherTownButton:setSelected(false, false)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
         local sharedData = _dataHelpers.getState()
 
         local capacityTextViewTitle = api.gui.comp.TextView.new(_('CAPACITY_FACTOR'))
@@ -637,12 +665,18 @@ local _guiHelpers = {
         capacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
         capacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
         capacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+        local capacityButtonCount = 0
+        for _, button in pairs(capacityToggleButtons) do
+            capacityButtonCount = capacityButtonCount + 1
+            button:setId(_utils.getCapacityButtonId(townId, capacityButtonCount))
+        end
         local capacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
         capacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
         capacityToggleButtonGroup:setEmitSignal(false)
         capacityToggleButtonGroup:onCurrentIndexChanged(
             function(newIndexBase0)
                 _dataHelpers.setCapacityFactor(newIndexBase0 + 1)
+                _syncOtherTownWindows(_utils.getCapacityButtonId, capacityButtonCount, newIndexBase0 + 1)
             end
         )
         for i = 1, #capacityToggleButtons do
@@ -658,12 +692,18 @@ local _guiHelpers = {
         consumptionToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
         consumptionToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
         consumptionToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+++"))
+        local consumptionButtonCount = 0
+        for _, button in pairs(consumptionToggleButtons) do
+            consumptionButtonCount = consumptionButtonCount + 1
+            button:setId(_utils.getConsumptionButtonId(townId, consumptionButtonCount))
+        end
         local consumptionToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
         consumptionToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
         consumptionToggleButtonGroup:setEmitSignal(false)
         consumptionToggleButtonGroup:onCurrentIndexChanged(
             function(newIndexBase0)
                 _dataHelpers.setConsumptionFactor(newIndexBase0 + 1)
+                _syncOtherTownWindows(_utils.getConsumptionButtonId, consumptionButtonCount, newIndexBase0 + 1)
             end
         )
         for i = 1, #consumptionToggleButtons do
@@ -679,12 +719,18 @@ local _guiHelpers = {
         personCapacityToggleButtons[4] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("0"))
         personCapacityToggleButtons[5] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("+"))
         personCapacityToggleButtons[6] = api.gui.comp.ToggleButton.new(api.gui.comp.TextView.new("++"))
+        local personCapacityButtonCount = 0
+        for _, button in pairs(personCapacityToggleButtons) do
+            personCapacityButtonCount = personCapacityButtonCount + 1
+            button:setId(_utils.getPersonCapacityButtonId(townId, personCapacityButtonCount))
+        end
         local personCapacityToggleButtonGroup = api.gui.comp.ToggleButtonGroup.new(api.gui.util.Alignment.HORIZONTAL, 0, false)
         personCapacityToggleButtonGroup:setOneButtonMustAlwaysBeSelected(true)
         personCapacityToggleButtonGroup:setEmitSignal(false)
         personCapacityToggleButtonGroup:onCurrentIndexChanged(
             function(newIndexBase0)
                 _dataHelpers.setPersonCapacityFactor(newIndexBase0 + 1)
+                _syncOtherTownWindows(_utils.getPersonCapacityButtonId, personCapacityButtonCount, newIndexBase0 + 1)
             end
         )
         for i = 1, #personCapacityToggleButtons do
@@ -701,7 +747,7 @@ local _guiHelpers = {
     end,
 }
 
-_guiHelpers.guiAddTuningMenu = function(windowId, townId)
+_guiHelpers.guiAddTuningMenu = function(windowId, townId, towns_indexedBy_townId)
     -- these 3 must be inited in the UI thread
     _guiResOutput = api.gui.comp.TextView.new('')
     _guiComOutput = api.gui.comp.TextView.new('')
@@ -733,7 +779,7 @@ _guiHelpers.guiAddTuningMenu = function(windowId, townId)
         4
     )
     local tuningLayout = tuningTab:getLayout()
-    _guiHelpers.guiAddAllTownProps(tuningLayout)
+    _guiHelpers.guiAddAllTownProps(tuningLayout, townId, towns_indexedBy_townId)
     _guiHelpers.guiAddOneTownProps(tuningLayout, townId)
 
     -- local minimumSize = window:calcMinimumSize()
@@ -760,9 +806,10 @@ function data()
 
             xpcall(
                 function()
-                    for townId, townData in pairs(_utils.getTowns()) do
+                    local towns = _utils.getTowns()
+                    for townId, townData in pairs(towns) do
                         if townData.townStatWindowId == id then
-                            _guiHelpers.guiAddTuningMenu(id, townId)
+                            _guiHelpers.guiAddTuningMenu(id, townId, towns)
                             break
                         end
                     end
