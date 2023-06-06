@@ -56,6 +56,9 @@ local _tuningTabId = 'lolloTownTuningTab'
 
 
 local _utils = {
+    getTuningTabId = function (townId)
+        return _tuningTabId .. '_' .. townId
+    end,
     isValidId = function(id)
         return type(id) == 'number' and id > 0
     end,
@@ -140,10 +143,10 @@ _utils.getTowns = function()
     if not(townCapacities) then return {} end
 
     local results = {}
-    for id, personCapacities in pairs(townCapacities) do
-        results[id] = {
+    for townId, personCapacities in pairs(townCapacities) do
+        results[townId] = {
             personCapacities = personCapacities,
-            townStatWindowId = 'temp.view.entity_' .. tostring(id)
+            townStatWindowId = 'temp.view.entity_' .. tostring(townId)
         }
     end
     return results
@@ -290,13 +293,14 @@ _triggers.guiTriggerUpdateAllTowns = function(newState)
     local _setResult = commonData.set(arrayUtils.cloneDeepOmittingFields(newState)) -- do this now, the other thread might take too long
     logger.print('guiTriggerUpdateAllTowns - setResult =') logger.debugPrint(_setResult)
 
-    local _tuningTab = api.gui.util.getById(_tuningTabId)
-    _tuningTab:setEnabled(false)
-
     local allTownsCount = 0
     local processedTownsCount = 0
     local _towns = _utils.getTowns()
-    for _, _ in pairs(_towns) do
+    for townId, _ in pairs(_towns) do
+        local _tuningTab = api.gui.util.getById(_utils.getTuningTabId(townId))
+        if _tuningTab ~= nil then
+            _tuningTab:setEnabled(false)
+        end
         allTownsCount = allTownsCount + 1
     end
 
@@ -316,7 +320,12 @@ _triggers.guiTriggerUpdateAllTowns = function(newState)
                     -- since it is eventually saved with the game and we need it accurate,
                     -- and then release the UI. 
                     logger.print('guiTriggerUpdateAllTowns - updateState success =', success, 'result =') logger.debugPrint(result)
-                    _tuningTab:setEnabled(true)
+                    for townId, _ in pairs(_towns) do
+                        local _tuningTab = api.gui.util.getById(_utils.getTuningTabId(townId))
+                        if _tuningTab ~= nil then
+                            _tuningTab:setEnabled(true)
+                        end
+                    end
                 end
             )
         end
@@ -559,7 +568,7 @@ local _guiHelpers = {
                 api.gui.comp.TextView.new(_areaTypes.ind.text)
             })
             if townCargoNeeds ~= nil then
-                local _tuningTab = api.gui.util.getById(_tuningTabId)
+                local _tuningTab = api.gui.util.getById(_utils.getTuningTabId(townId))
                 for cargoTypeId, cargoData in pairs(cargoTypes) do
                     local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
                     resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
@@ -698,7 +707,7 @@ _guiHelpers.guiAddTuningMenu = function(windowId, townId)
     _guiComOutput = api.gui.comp.TextView.new('')
     _guiIndOutput = api.gui.comp.TextView.new('')
 
-    logger.print('windowId =', windowId or 'NIL')
+    logger.print('guiAddTuningMenu starting, windowId =', windowId or 'NIL')
     local window = api.gui.util.getById(windowId)
     window:setResizable(true)
 
@@ -708,13 +717,15 @@ _guiHelpers.guiAddTuningMenu = function(windowId, townId)
     local windowContent = window:getContent()
     -- remove the "editor" tab if in sandbox mode
     if windowContent:getNumTabs() > 4 then
-        local editorTab = windowContent:getTab(4)
-        editorTab:setVisible(false, false) -- does not work
+        local editorTab = windowContent:getTab(4) -- base 0
+        logger.print('editorTab.id =', editorTab:getId() or 'NIL')
+        logger.print('editorTab.name =', editorTab:getName() or 'NIL')
+        -- editorTab:setVisible(false, false) -- does not work
         editorTab:setEnabled(false) -- at least this works
     end
 
     local tuningTab = api.gui.comp.Component.new('TUNING')
-    tuningTab:setId(_tuningTabId)
+    tuningTab:setId(_utils.getTuningTabId(townId))
     tuningTab:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
     windowContent:insertTab(
         api.gui.comp.TextView.new(_('TUNING_TAB_LABEL')),
