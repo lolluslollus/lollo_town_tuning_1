@@ -76,6 +76,32 @@ arrayUtils.concatKeysValues = function(table1, table2)
     end
 end
 
+arrayUtils.getConcatKeysValues = function(...)
+    -- local results <const> = {}
+    local results = {}
+    -- For each source table
+    for _, tab in pairs{...} do
+      -- For each pair in tab
+        for key, value in pairs(tab) do
+            results[key] = value
+        end
+    end
+    return results
+end
+
+arrayUtils.getConcatValues = function(...)
+    -- local results <const> = {}
+    local results = {}
+    -- For each source table
+    for _, tab in pairs{...} do
+      -- For each value in tab
+        for _, value in pairs(tab) do
+            results[#results+1] = value
+        end
+    end
+    return results
+end
+
 arrayUtils.getFirst = function(tab)
     if tab == nil or #tab == nil then return nil end
 
