@@ -83,6 +83,7 @@ _utils.getCargoNeeds = function(townId)
     local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
     if not(townData) then return nil end
     local cargoSupplyAndLimit = api.engine.system.townBuildingSystem.getCargoSupplyAndLimit(townId)
+    -- logger.print('getCargoNeeds found cargoSupplyAndLimit =') logger.debugPrint(cargoSupplyAndLimit)
     if not(cargoSupplyAndLimit) then return nil end
 
     -- LOLLO NOTE since build 35045, townData.cargoNeeds contains 3 com and 3 ind,
@@ -150,6 +151,7 @@ _utils.getAllCargoTypesButPassengers = function()
 end
 
 _utils.getTowns = function()
+    -- LOLLO NOTE UG TODO if a town has all capas == 0 or no buildings, this will not return it
     local townCapacities = api.engine.system.townBuildingSystem.getTown2personCapacitiesMap()
     if not(townCapacities) then return {} end
 
@@ -271,6 +273,7 @@ local _triggers = {
     end,
 
     guiTriggerUpdateTownInitialLandUse = function(townId, newCapa, resComInd)
+        logger.print('guiTriggerUpdateTownInitialLandUse starting, townId = ' .. tostring(townId or 'NIL') .. ', newCapa = ' .. tostring(newCapa or 'NIL'), ', resComInd = ' .. tostring(resComInd))
         if not(_utils.isValidAndExistingId(townId)) then return end
         if not(arrayUtils.arrayHasValue({1, 2, 3}, resComInd)) then return end
 
@@ -280,6 +283,21 @@ local _triggers = {
         local resCapa = resComInd == 1 and newCapa or townData.initialLandUseCapacities[1]
         local comCapa = resComInd == 2 and newCapa or townData.initialLandUseCapacities[2]
         local indCapa = resComInd == 3 and newCapa or townData.initialLandUseCapacities[3]
+        logger.print('guiTriggerUpdateTownInitialLandUse found resCapa = ', tostring(resCapa), ', comCapa = ', tostring(comCapa), ', indCapa = ' .. tostring(indCapa))
+        -- LOLLO NOTE if all capas are 0, some features won't work, so I set the latest to 1.
+        -- In particular,_utils.getTowns() will not find that town, and its callers will not update it.
+        -- The following is not enough:
+        -- if resCapa == 0 and comCapa == 0 and indCapa == 0 then
+        --     resCapa = resComInd == 1 and 1 or 0
+        --     comCapa = resComInd == 2 and 1 or 0
+        --     indCapa = resComInd == 3 and 1 or 0
+        -- end
+        -- and neither this:
+        -- if resCapa == 0 then resCapa = 1 end
+        -- if comCapa == 0 then comCapa = 1 end
+        -- if indCapa == 0 then indCapa = 1 end
+        -- If the user deletes all builödings, the same will happen, so no bodge in the end
+        -- logger.print('guiTriggerUpdateTownInitialLandUse adjusted resCapa = ', tostring(resCapa), ', comCapa = ', tostring(comCapa), ', indCapa = ' .. tostring(indCapa))
 
         api.cmd.sendCommand(
             -- this won't trigger updateFn for all the town buildings
@@ -499,16 +517,17 @@ local _dataHelpers = {
 local _guiHelpers = {
     guiAddOneTownProps = function(parentLayout, townId)
         if type(townId) ~= 'number' or townId < 1 then return end
-        logger.print('townId =', townId or 'NIL')
+        logger.print('guiAddOneTownProps got townId =', townId or 'NIL')
 
         local townData = api.engine.getComponent(townId, api.type.ComponentType.TOWN)
-        logger.print('townData =') logger.debugPrint(townData or 'NIL')
+        logger.print('guiAddOneTownProps got townData =') logger.debugPrint(townData or 'NIL')
         if not(townData) then return end
 
         local townCargoNeeds = _utils.getCargoNeeds(townId)
+        logger.print('guiAddOneTownProps got townCargoNeeds =') logger.debugPrint(townCargoNeeds or 'NIL')
 
         local _addInitialLandUseCapacities = function()
-            local _getField = function(resComInd)
+            local _getInputField = function(resComInd)
                 local inputField = api.gui.comp.Slider.new(true)
                 inputField:setMaximum(_townInitialLandUseCapacities.max)
                 inputField:setMinimum(_townInitialLandUseCapacities.min)
@@ -517,6 +536,12 @@ local _guiHelpers = {
                 inputField:setValue(townData.initialLandUseCapacities[resComInd], false)
                 local size = api.gui.util.Size.new() size.w = 600
                 inputField:setMinimumSize(size)
+                inputField:onValueChanged(
+                    function(newValue)
+                        logger.print('inputField:newValue =', type(newValue)) logger.debugPrint(newValue)
+                        _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, resComInd)
+                    end
+                )
                 return inputField
             end
 
@@ -524,40 +549,22 @@ local _guiHelpers = {
             townInitialLandUseCapacitiesList:setLayout(api.gui.layout.BoxLayout.new('VERTICAL'))
 
             townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.res.initialCapaText))
-            local resInput = _getField(1)
+            local resInput = _getInputField(1)
             _guiResOutput:setText(tostring(resInput:getValue()))
             townInitialLandUseCapacitiesList:getLayout():addItem(resInput)
             townInitialLandUseCapacitiesList:getLayout():addItem(_guiResOutput)
-            resInput:onValueChanged(
-                function(newValue)
-                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 1)
-                end
-            )
 
             townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.com.initialCapaText))
-            local comInput = _getField(2)
+            local comInput = _getInputField(2)
             _guiComOutput:setText(tostring(comInput:getValue()))
             townInitialLandUseCapacitiesList:getLayout():addItem(comInput)
             townInitialLandUseCapacitiesList:getLayout():addItem(_guiComOutput)
-            comInput:onValueChanged(
-                function(newValue)
-                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 2)
-                end
-            )
 
             townInitialLandUseCapacitiesList:getLayout():addItem(api.gui.comp.TextView.new(_areaTypes.ind.initialCapaText))
-            local indInput = _getField(3)
+            local indInput = _getInputField(3)
             _guiIndOutput:setText(tostring(indInput:getValue()))
             townInitialLandUseCapacitiesList:getLayout():addItem(indInput)
             townInitialLandUseCapacitiesList:getLayout():addItem(_guiIndOutput)
-            indInput:onValueChanged(
-                function(newValue)
-                    logger.print('newValue =', type(newValue)) logger.debugPrint(newValue)
-                    _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, 3)
-                end
-            )
 
             return townInitialLandUseCapacitiesList
         end
@@ -647,7 +654,9 @@ local _guiHelpers = {
                         for i = 1, buttonCount, 1 do
                             if i ~= newIndexBase1 then
                                 otherTownButton = api.gui.util.getById(getIdFunc(otherTownId, i))
-                                otherTownButton:setSelected(false, false)
+                                if otherTownButton ~= nil then
+                                    otherTownButton:setSelected(false, false)
+                                end
                             end
                         end
                     end
@@ -778,6 +787,7 @@ _guiHelpers.guiAddTuningMenu = function(windowId, townId, towns_indexedBy_townId
         tuningTab,
         4
     )
+
     local tuningLayout = tuningTab:getLayout()
     _guiHelpers.guiAddAllTownProps(tuningLayout, townId, towns_indexedBy_townId)
     _guiHelpers.guiAddOneTownProps(tuningLayout, townId)
