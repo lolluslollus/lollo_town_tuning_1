@@ -538,7 +538,7 @@ local _guiHelpers = {
                 inputField:setMinimumSize(size)
                 inputField:onValueChanged(
                     function(newValue)
-                        logger.print('inputField:newValue =', type(newValue)) logger.debugPrint(newValue)
+                        logger.print('inputField:newValue = ' .. type(newValue) .. ' ' .. tostring(newValue or 'NIL') .. ', resComId = ' .. tostring(resComInd or 'NIL') .. ', townId = ' .. tostring(townId or 'NIL'))
                         _triggers.guiTriggerUpdateTownInitialLandUse(townId, newValue, resComInd)
                     end
                 )
@@ -590,7 +590,9 @@ local _guiHelpers = {
                 for cargoTypeId, cargoData in pairs(cargoTypes) do
                     local resComp = api.gui.comp.Component.new(_areaTypes.res.id)
                     resComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                    resComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon)) -- iconSmall
+                    local resIconSmall = api.gui.comp.ImageView.new(cargoData.icon)
+                    resIconSmall:setTooltip(cargoData.name)
+                    resComp:getLayout():addItem(resIconSmall)
                     local resCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                     resCheckBox:onToggle(
                         function(newValue)
@@ -605,7 +607,9 @@ local _guiHelpers = {
 
                     local comComp = api.gui.comp.Component.new(_areaTypes.com.id)
                     comComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                    comComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                    local comIconSmall = api.gui.comp.ImageView.new(cargoData.icon)
+                    comIconSmall:setTooltip(cargoData.name)
+                    comComp:getLayout():addItem(comIconSmall)
                     local comCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                     comCheckBox:onToggle(
                         function(newValue)
@@ -620,7 +624,9 @@ local _guiHelpers = {
 
                     local indComp = api.gui.comp.Component.new(_areaTypes.ind.id)
                     indComp:setLayout(api.gui.layout.BoxLayout.new('HORIZONTAL'))
-                    indComp:getLayout():addItem(api.gui.comp.ImageView.new(cargoData.icon))
+                    local indIconSmall = api.gui.comp.ImageView.new(cargoData.icon)
+                    indIconSmall:setTooltip(cargoData.name)
+                    indComp:getLayout():addItem(indIconSmall)
                     local indCheckBox = api.gui.comp.CheckBox.new('', 'ui/checkbox0.tga', 'ui/checkbox1.tga')
                     indCheckBox:onToggle(
                         function(newValue)
