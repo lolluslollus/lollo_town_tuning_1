@@ -578,8 +578,9 @@ local _guiHelpers = {
             local cargoTypes = _utils.getAllCargoTypesButPassengers()
             -- logger.print('cargoTypes =') logger.debugPrint(cargoTypes or 'NIL')
 
-            local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
-            cargoTypesGuiTable:setNumCols(3)
+            -- local cargoTypesGuiTable = api.gui.comp.Table.new(#cargoTypes + 1, 'NONE')
+            -- cargoTypesGuiTable:setNumCols(3)
+            local cargoTypesGuiTable = api.gui.comp.Table.new(3, 'NONE') -- num of columns, one of "NONE", "SELECTABLE" or "MULTI"
             cargoTypesGuiTable:addRow({
                 api.gui.comp.TextView.new(_areaTypes.res.text),
                 api.gui.comp.TextView.new(_areaTypes.com.text),
